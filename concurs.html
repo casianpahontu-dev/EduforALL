@@ -1,0 +1,2877 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EDUforALL – ChatGPT: Sprijin sau Capcană?</title>
+
+<style>
+:root{
+ --bg:#0b1020;--panel:#111a33;--accent:#7aa2ff;--accent2:#58d6c5;
+ --warn:#ffcc66;--danger:#ff6b6b;--text:#eef3ff;--muted:#b8c4ff;
+ --border:rgba(255,255,255,.12);--radius:18px;
+ --teacher:#ff9966;--student:#66ffcc;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:system-ui,Segoe UI,Roboto;
+ background:radial-gradient(1000px 600px at 20% 10%,rgba(122,162,255,.18),transparent 60%),var(--bg);
+ color:var(--text);
+}
+.hidden{display:none}
+.sidebar{
+ width:270px;min-height:100vh;padding:16px;
+ background:rgba(15,23,48,.95);position:fixed;left:0;top:0;
+ border-right:1px solid var(--border);
+}
+.main{margin-left:270px;padding:20px}
+@media (max-width:768px){
+ .sidebar{width:100%;position:relative;min-height:auto}
+ .main{margin-left:0}
+}
+.nav button{
+ width:100%;margin:6px 0;padding:12px;border-radius:14px;
+ border:1px solid var(--border);background:rgba(255,255,255,.04);
+ color:var(--text);font-weight:700;text-align:left;transition:all 0.3s;
+}
+.nav button:hover{background:rgba(122,162,255,.1);transform:translateX(5px)}
+.nav button.active{background:rgba(122,162,255,.22);border-color:var(--accent)}
+.card{
+ background:rgba(17,26,51,.95);border:1px solid var(--border);
+ border-radius:var(--radius);padding:20px;margin-bottom:20px;
+ box-shadow:0 4px 12px rgba(0,0,0,.2);
+}
+.progress{height:10px;border-radius:10px;background:#222;margin-top:6px}
+.bar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:10px}
+.chatlog{height:280px;overflow:auto;border:1px solid var(--border);border-radius:14px;padding:10px;background:#0f1730}
+.msg{margin:10px 0;padding:10px 14px;border-radius:12px;max-width:85%}
+.bot{background:rgba(88,214,197,.15);border-left:3px solid var(--accent2)}
+.me{background:rgba(122,162,255,.15);border-right:3px solid var(--accent);margin-left:auto;text-align:right}
+input,textarea,select{
+ width:100%;padding:12px;border-radius:12px;
+ border:1px solid var(--border);background:#0f1730;color:var(--text);
+ margin:8px 0;
+}
+button{
+ cursor:pointer;padding:10px 16px;border-radius:12px;
+ background:linear-gradient(135deg, var(--accent), var(--accent2));
+ border:none;color:var(--bg);font-weight:bold;margin:5px;
+}
+button.secondary{
+ background:transparent;border:1px solid var(--border);color:var(--text);
+}
+button.teacher-btn{
+ background:linear-gradient(135deg, var(--teacher), #ff6600);
+}
+button.student-btn{
+ background:linear-gradient(135deg, var(--student), #00cc99);
+}
+kbd{
+ border:1px solid var(--border);border-radius:8px;padding:2px 8px;
+ font-size:12px;color:var(--muted);background:rgba(255,255,255,.05);
+}
+.table{width:100%;border-collapse:collapse;margin:15px 0}
+.table th{background:rgba(122,162,255,.15);padding:12px}
+.table td{padding:10px;border-bottom:1px solid var(--border)}
+.table tr:hover{background:rgba(255,255,255,.05)}
+.stats{display:flex;justify-content:space-around;text-align:center;margin:20px 0}
+.stat-item{padding:15px;background:rgba(255,255,255,.05);border-radius:12px;min-width:120px}
+.tag{
+ display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;
+ margin:2px;background:rgba(122,162,255,.2);
+}
+.teacher-tag{background:rgba(255,153,102,.3);color:var(--teacher)}
+.student-tag{background:rgba(102,255,204,.3);color:var(--student)}
+.login-modal{
+ position:fixed;top:0;left:0;width:100%;height:100%;
+ background:rgba(0,0,0,.8);display:flex;align-items:center;
+ justify-content:center;z-index:1000;
+}
+.login-box{
+ background:var(--panel);padding:30px;border-radius:var(--radius);
+ width:90%;max-width:400px;border:1px solid var(--border);
+}
+.user-badge{
+ padding:8px 15px;border-radius:20px;font-size:14px;
+ margin-left:10px;display:inline-block;
+}
+.teacher-badge{background:rgba(255,153,102,.2);color:var(--teacher)}
+.student-badge{background:rgba(102,255,204,.2);color:var(--student)}
+.notification{
+ position:fixed;top:20px;right:20px;padding:15px;
+ border-radius:12px;background:var(--panel);border-left:4px solid var(--accent);
+ box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:100;
+}
+.tab-container{display:flex;margin-bottom:20px;border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:12px;text-align:center;cursor:pointer;border-bottom:3px solid transparent}
+.tab.active{border-bottom-color:var(--accent);background:rgba(122,162,255,.1)}
+.case-study{padding:15px;border:1px solid var(--border);border-radius:12px;margin:10px 0}
+.pro-con{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pro{padding:15px;background:rgba(102,255,204,.1);border-radius:12px}
+.con{padding:15px;background:rgba(255,107,107,.1);border-radius:12px}
+.step{display:flex;align-items:center;margin:10px 0}
+.step-num{background:var(--accent);color:var(--bg);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;margin-right:15px}
+</style>
+</head>
+
+<body>
+
+<!-- Modal de autentificare -->
+<div id="loginModal" class="login-modal">
+<div class="login-box">
+<h2 style="text-align:center">👋 Bun venit la EDUforALL</h2>
+<p style="text-align:center;color:var(--muted)">Selectează rolul tău pentru a continua</p>
+
+<div style="margin:30px 0">
+<button onclick="login('student')" class="student-btn" style="width:100%;padding:15px;margin-bottom:15px">
+<div style="font-size:24px">🎓</div>
+<h3>Elev</h3>
+<p style="font-size:14px;margin:5px 0">Acces la resurse de învățare, quiz-uri și chat bot educațional</p>
+</button>
+
+<button onclick="login('teacher')" class="teacher-btn" style="width:100%;padding:15px">
+<div style="font-size:24px">👨‍🏫</div>
+<h3>Profesor</h3>
+<p style="font-size:14px;margin:5px 0">Acces complet, management clase, evaluare și resurse didactice</p>
+</button>
+</div>
+
+<div style="border-top:1px solid var(--border);padding-top:20px">
+<h4>Acces demo:</h4>
+<p style="font-size:14px;color:var(--muted)">Poți schimba rolul oricând din bara laterală</p>
+<button onclick="loginDemo()" class="secondary" style="width:100%">🎭 Continuă ca vizitator</button>
+</div>
+</div>
+</div>
+
+<div class="sidebar">
+<h2>EDUforALL</h2>
+<div id="userInfo" style="margin-bottom:20px">
+<p id="welcomeMessage">Bun venit!</p>
+<div id="userBadge" class="user-badge student-badge">🎓 Elev</div>
+</div>
+
+<div class="nav">
+<button data-p="home" class="active">🏠 Acasă</button>
+<button data-p="dashboard">📊 Dashboard</button>
+<button data-p="sources">📚 Surse & Verificare</button>
+<button data-p="quiz">📝 Quiz & Evaluare</button>
+<button data-p="ai">🤖 Inteligență Artificială</button>
+<button data-p="ethics">⚖️ Etică</button>
+<button data-p="addiction">📵 Dependență</button>
+<button data-p="cases">📖 Studii de caz</button>
+<button data-p="compare">⚖️ Sprijin vs Capcană</button>
+<button data-p="chat">💬 Chat bot</button>
+<button data-p="resources">📦 Resurse</button>
+<button data-p="classes" id="classesBtn" class="hidden">👥 Clase</button>
+<button data-p="assignments" id="assignmentsBtn" class="hidden">📋 Teme & Proiecte</button>
+<button data-p="analytics" id="analyticsBtn" class="hidden">📈 Analize</button>
+<button data-p="future">🚀 Educația 2030</button>
+</div>
+
+<div class="card">
+<b>Contul tău</b><br>
+<div id="userStats">
+<small>Nivel: <span id="userLevel">Începător</span></small><br>
+<small>Puncte: <span id="pointsDisplay">0</span></small>
+<div class="progress"><div class="bar" id="progressBar" style="width:0%"></div></div>
+</div>
+<button onclick="switchRole()" class="secondary" style="width:100%;margin-top:10px">🔄 Schimbă rolul</button>
+<button onclick="logout()" class="secondary" style="width:100%;margin-top:5px">🚪 Delogare</button>
+</div>
+
+<div class="card">
+<h4>Exportă progresul</h4>
+<button onclick="exportData()" class="secondary">💾 Salvează datele</button>
+<button onclick="generateReport()" class="secondary" id="reportBtn">📄 Generează raport</button>
+</div>
+</div>
+
+<div class="main">
+<h1 id="title">ACASĂ</h1>
+<div id="page"></div>
+</div>
+
+<script>
+// ===== SISTEM DE AUTENTIFICARE =====
+let currentUser = null;
+let userRole = null;
+let points = 0;
+let userData = {};
+let userClasses = [];
+let userAssignments = [];
+
+// Date demo pentru teste
+const demoData = {
+  student: {
+    name: "Alexandra Popescu",
+    class: "XI A",
+    school: "Liceul Teoretic Mihai Eminescu",
+    level: "Intermediar",
+    points: 125,
+    joinDate: "2024-09-15",
+    progress: 65,
+    avatar: "👩‍🎓"
+  },
+  teacher: {
+    name: "Prof. Maria Ionescu",
+    subject: "Informatică și TIC",
+    school: "Liceul Teoretic Mihai Eminescu",
+    level: "Expert",
+    points: 420,
+    joinDate: "2023-01-10",
+    progress: 85,
+    avatar: "👩‍🏫",
+    classes: ["XI A", "XII B", "X C"],
+    students: 87
+  }
+};
+
+// Inițializare aplicație
+function initApp() {
+  // Verifică dacă există utilizator salvat
+  const savedUser = localStorage.getItem('eduforall_user');
+  if (savedUser) {
+    const user = JSON.parse(savedUser);
+    loginUser(user.role, user.name);
+  } else {
+    // Arată modalul de login
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+}
+
+// Funcție de login
+function login(role) {
+  document.getElementById('loginModal').style.display = 'none';
+  loginUser(role, role === 'student' ? demoData.student.name : demoData.teacher.name);
+}
+
+// Funcție demo
+function loginDemo() {
+  document.getElementById('loginModal').style.display = 'none';
+  loginUser('student', 'Utilizator Demo');
+  showNotification('Ai acces demo. Conținut limitat disponibil.', 'info');
+}
+
+// Login utilizator
+function loginUser(role, name) {
+  userRole = role;
+  currentUser = {
+    role: role,
+    name: name,
+    id: Date.now().toString(),
+    loginTime: new Date().toISOString()
+  };
+  
+  // Salvează în localStorage
+  localStorage.setItem('eduforall_user', JSON.stringify(currentUser));
+  
+  // Încarcă datele utilizatorului
+  loadUserData();
+  
+  // Actualizează interfața
+  updateUIForRole();
+  
+  // Arată notificare
+  showNotification(`Bine ai venit, ${name}!`, 'success');
+}
+
+// Schimbă rolul
+function switchRole() {
+  if (confirm(`Sigur dorești să schimbi rolul? Momentan ești ${userRole === 'student' ? 'elev' : 'profesor'}.`)) {
+    const newRole = userRole === 'student' ? 'teacher' : 'student';
+    loginUser(newRole, newRole === 'student' ? demoData.student.name : demoData.teacher.name);
+  }
+}
+
+// Logout
+function logout() {
+  if (confirm('Sigur dorești să te deloghezi?')) {
+    localStorage.removeItem('eduforall_user');
+    currentUser = null;
+    userRole = null;
+    document.getElementById('loginModal').style.display = 'flex';
+    showNotification('Te-ai delogat cu succes!', 'info');
+  }
+}
+
+// Încarcă date utilizator
+function loadUserData() {
+  if (userRole === 'student') {
+    userData = { ...demoData.student };
+    points = userData.points;
+    
+    // Date pentru elev
+    userClasses = [
+      { name: "XI A", teacher: "Prof. Maria Ionescu", subject: "Informatică" },
+      { name: "XI A", teacher: "Prof. Ion Popescu", subject: "Matematică" }
+    ];
+    
+    userAssignments = [
+      { id: 1, subject: "Informatică", title: "Proiect AI", dueDate: "2024-12-20", status: "în desfășurare" },
+      { id: 2, subject: "Matematică", title: "Test funcții", dueDate: "2024-12-18", status: "neînceput" }
+    ];
+    
+  } else if (userRole === 'teacher') {
+    userData = { ...demoData.teacher };
+    points = userData.points;
+    
+    // Date pentru profesor
+    userClasses = [
+      { name: "XI A", students: 28, subject: "Informatică" },
+      { name: "XII B", students: 32, subject: "TIC" },
+      { name: "X C", students: 27, subject: "Informatică" }
+    ];
+    
+    userAssignments = [
+      { id: 1, class: "XI A", title: "Proiect AI", assigned: "2024-12-10", submissions: 15, total: 28 },
+      { id: 2, class: "XII B", title: "Test securitate", assigned: "2024-12-12", submissions: 25, total: 32 }
+    ];
+  }
+}
+
+// Actualizează UI pentru rol
+function updateUIForRole() {
+  // Actualizează mesajul de bun venit
+  const welcomeMsg = userRole === 'student' 
+    ? `Bună, ${userData.name}!`
+    : `Bine ați revenit, ${userData.name}!`;
+  document.getElementById('welcomeMessage').textContent = welcomeMsg;
+  
+  // Actualizează badge-ul
+  const badge = document.getElementById('userBadge');
+  badge.textContent = userRole === 'student' ? '🎓 Elev' : '👨‍🏫 Profesor';
+  badge.className = userRole === 'student' ? 'user-badge student-badge' : 'user-badge teacher-badge';
+  
+  // Actualizează nivelul și punctele
+  document.getElementById('userLevel').textContent = userData.level;
+  updatePointsDisplay();
+  
+  // Arată/ascunde butoane specifice rolului
+  const teacherButtons = ['classesBtn', 'assignmentsBtn', 'analyticsBtn', 'reportBtn'];
+  teacherButtons.forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.classList.toggle('hidden', userRole !== 'teacher');
+    }
+  });
+  
+  // Re-render pagina curentă
+  const currentPage = localStorage.getItem('eduforall_currentPage') || 'home';
+  render(currentPage);
+}
+
+// Actualizează afișajul punctelor
+function updatePointsDisplay() {
+  document.getElementById('pointsDisplay').textContent = points;
+  const progress = Math.min((points / 500) * 100, 100);
+  document.getElementById('progressBar').style.width = `${progress}%`;
+}
+
+// Arată notificare
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.innerHTML = `
+    <div style="display:flex;align-items:center">
+      <div style="margin-right:10px;font-size:20px">
+        ${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️'}
+      </div>
+      <div>${message}</div>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100px)';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// ===== PAGINI =====
+const pages = {};
+
+// Pagina Home
+pages.home = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>${isTeacher ? '👨‍🏫' : '🎓'} Bun venit, ${userData.name}!</h2>
+    <p>Platforma ta educațională pentru utilizarea responsabilă a inteligenței artificiale.</p>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <div style="font-size:24px">${isTeacher ? '👥' : '📚'}</div>
+        <div><b>${isTeacher ? 'Clasele tale' : 'Clasa ta'}</b></div>
+        <div style="color:var(--accent)">${isTeacher ? userData.classes?.length || 3 : userData.class || 'XI A'}</div>
+      </div>
+      <div class="stat-item">
+        <div style="font-size:24px">📈</div>
+        <div><b>Progres</b></div>
+        <div style="color:var(--accent2)">${userData.progress || 65}%</div>
+      </div>
+      <div class="stat-item">
+        <div style="font-size:24px">🏆</div>
+        <div><b>Puncte</b></div>
+        <div style="color:var(--warn)">${points}</div>
+      </div>
+    </div>
+    
+    <h3>${isTeacher ? 'Activități recente' : 'Progresul tău'}</h3>
+    ${isTeacher ? `
+      <ul>
+        <li>✅ Ai corectat 15 proiecte AI în ultima săptămână</li>
+        <li>📝 3 teme noi planificate pentru săptămâna viitoare</li>
+        <li>👥 5 întrebări de la elevi despre utilizarea etică a AI</li>
+        <li>📊 Raport de progres generat pentru clasa XI A</li>
+      </ul>
+    ` : `
+      <ul>
+        <li>✅ Ai completat quiz-ul "Etica AI" cu scor 80%</li>
+        <li>📝 2 teme în desfășurare cu termen în 7 zile</li>
+        <li>🤖 Ai folosit chat bot-ul de 5 ori săptămâna aceasta</li>
+        <li>📈 Progres total: ${userData.progress || 65}%</li>
+      </ul>
+    `}
+  </div>
+  
+  <div class="card">
+    <h2>${isTeacher ? '🎯 Obiective pentru săptămâna aceasta' : '🎯 Ce poți învăța săptămâna aceasta'}</h2>
+    ${isTeacher ? `
+      <ol>
+        <li><b>Planifică o lecție despre etica AI</b> – Resurse disponibile în secțiunea Resurse</li>
+        <li><b>Evaluare teme proiecte AI</b> – Utilizează rubricile din secțiunea Evaluare</li>
+        <li><b>Discuție cu elevii</b> – Despre utilizarea responsabilă a ChatGPT</li>
+        <li><b>Actualizează materialele</b> – Adaugă cele mai recente ghiduri UNESCO</li>
+      </ol>
+    ` : `
+      <ol>
+        <li><b>Completează quiz-ul de etică</b> – În secțiunea Quiz & Evaluare</li>
+        <li><b>Folosește AI pentru a înțelege un concept dificil</b> – În secțiunea Chat bot</li>
+        <li><b>Verifică o sursă de informații</b> – Exersează cu ghidul din Surse & Verificare</li>
+        <li><b>Completează testul de dependență</b> – În secțiunea Dependență</li>
+      </ol>
+    `}
+    
+    <div style="margin-top:20px">
+      <button onclick="render('dashboard')">📊 Vezi dashboard complet</button>
+    </div>
+  </div>
+  
+  ${isTeacher ? `
+  <div class="card">
+    <h2>👥 Managementul claselor</h2>
+    <p>Ca profesor, ai acces la instrumente speciale pentru managementul claselor și evaluarea elevilor.</p>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px">
+        <h4>📋 Creare teme</h4>
+        <p>Generează și atribuie teme cu rubrici de evaluare specifice.</p>
+        <button onclick="render('assignments')" class="secondary" style="width:100%">Accesează</button>
+      </div>
+      <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px">
+        <h4>📈 Analize progres</h4>
+        <p>Monitorizează progresul elevilor și identifică nevoile educaționale.</p>
+        <button onclick="render('analytics')" class="secondary" style="width:100%">Accesează</button>
+      </div>
+    </div>
+  </div>
+  ` : `
+  <div class="card">
+    <h2>📚 Resursele tale personale</h2>
+    <p>Ca elev, ai acces la resurse personalizate pentru învățarea cu AI.</p>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;background:rgba(102,255,204,.1);border-radius:12px">
+        <h4>📝 Temele tale</h4>
+        <p>Vezi și gestionează toate temele și proiectele tale.</p>
+        <button onclick="viewMyAssignments()" class="secondary" style="width:100%">Vezi teme</button>
+      </div>
+      <div style="padding:15px;background:rgba(102,255,204,.1);border-radius:12px">
+        <h4>📊 Progres personal</h4>
+        <p>Urmărește-ți dezvoltarea competențelor digitale.</p>
+        <button onclick="render('dashboard')" class="secondary" style="width:100%">Vezi progres</button>
+      </div>
+    </div>
+  </div>
+  `}
+  `;
+};
+
+// Pagina Dashboard
+pages.dashboard = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>📊 Dashboard ${isTeacher ? 'profesor' : 'personal'}</h2>
+    
+    ${isTeacher ? `
+      <h3>📈 Statistici generale</h3>
+      <div class="stats">
+        <div class="stat-item">
+          <div style="font-size:24px">👥</div>
+          <div><b>Elevi</b></div>
+          <div style="color:var(--accent)">${userData.students || 87}</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">📚</div>
+          <div><b>Clase</b></div>
+          <div style="color:var(--accent2)">${userData.classes?.length || 3}</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">📝</div>
+          <div><b>Teme active</b></div>
+          <div style="color:var(--warn)">${userAssignments.length}</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">✅</div>
+          <div><b>Evaluări</b></div>
+          <div style="color:var(--accent2)">${userData.students ? Math.floor(userData.students * 0.7) : 62}</div>
+        </div>
+      </div>
+      
+      <h3>📋 Clasele tale</h3>
+      <table class="table">
+        <tr><th>Clasă</th><th>Materie</th><th>Elevi</th><th>Teme active</th><th>Acțiuni</th></tr>
+        ${userClasses.map(cls => `
+          <tr>
+            <td>${cls.name}</td>
+            <td>${cls.subject}</td>
+            <td>${cls.students}</td>
+            <td>${userAssignments.filter(a => a.class === cls.name).length}</td>
+            <td><button onclick="viewClass('${cls.name}')" class="secondary">Vezi detalii</button></td>
+          </tr>
+        `).join('')}
+      </table>
+      
+      <h3>📊 Analiză utilizare AI în clasă</h3>
+      <div style="background:rgba(255,255,255,.05);padding:15px;border-radius:12px;margin:15px 0">
+        <p><b>Nivelul de utilizare AI:</b> Mediu-Înalt (68% dintre elevi folosesc AI regulat)</p>
+        <p><b>Probleme identificate:</b> 15% dintre elevi prezintă semne de dependență</p>
+        <p><b>Recomandare:</b> Organizează o lecție specială despre etica AI</p>
+      </div>
+      
+    ` : `
+      <h3>📈 Progresul tău academic</h3>
+      <div class="stats">
+        <div class="stat-item">
+          <div style="font-size:24px">📚</div>
+          <div><b>Materii</b></div>
+          <div style="color:var(--accent)">6</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">📝</div>
+          <div><b>Teme active</b></div>
+          <div style="color:var(--accent2)">${userAssignments.length}</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">✅</div>
+          <div><b>Completate</b></div>
+          <div style="color:var(--warn)">12</div>
+        </div>
+        <div class="stat-item">
+          <div style="font-size:24px">🤖</div>
+          <div><b>Utilizări AI</b></div>
+          <div style="color:var(--accent2)">47</div>
+        </div>
+      </div>
+      
+      <h3>📋 Temele și proiectele tale</h3>
+      <table class="table">
+        <tr><th>Materie</th><th>Titlu</th><th>Termen limită</th><th>Stare</th><th>Acțiuni</th></tr>
+        ${userAssignments.map(assignment => `
+          <tr>
+            <td>${assignment.subject}</td>
+            <td>${assignment.title}</td>
+            <td>${assignment.dueDate}</td>
+            <td><span class="tag ${assignment.status === 'completat' ? 'student-tag' : ''}">${assignment.status}</span></td>
+            <td><button onclick="workOnAssignment(${assignment.id})" class="secondary">Lucrează</button></td>
+          </tr>
+        `).join('')}
+      </table>
+      
+      <h3>📊 Analiză utilizare AI personală</h3>
+      <div style="background:rgba(255,255,255,.05);padding:15px;border-radius:12px;margin:15px 0">
+        <p><b>Nivelul tău de utilizare:</b> Responsabil (folosești AI ca suport, nu ca înlocuitor)</p>
+        <p><b>Puncte forte:</b> Verifici informațiile și rescrii cu propriile cuvinte</p>
+        <p><b>Recomandare:</b> Continuă să exersezi gândirea critică</p>
+      </div>
+    `}
+    
+    <h3>🎯 Recomandări personalizate</h3>
+    ${isTeacher ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📚 Resurse didactice</h4>
+          <ul style="font-size:14px">
+            <li>Plan de lecție: "Etica în era AI"</li>
+            <li>Rubrică de evaluare proiecte AI</li>
+            <li>Prezentare pentru părinți</li>
+          </ul>
+          <button onclick="render('resources')" class="secondary" style="width:100%;margin-top:10px">Accesează resurse</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🛠️ Instrumente</h4>
+          <ul style="font-size:14px">
+            <li>Generator de teme cu AI</li>
+            <li>Analizor de similaritate</li>
+            <li>Evaluator automat de răspunsuri</li>
+          </ul>
+          <button onclick="openTeacherTools()" class="secondary" style="width:100%;margin-top:10px">Deschide instrumente</button>
+        </div>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📚 Resurse de învățare</h4>
+          <ul style="font-size:14px">
+            <li>Ghid de prompturi pentru învățare</li>
+            <li>Checklist utilizare responsabilă</li>
+            <li>Jurnal de învățare digital</li>
+          </ul>
+          <button onclick="render('resources')" class="secondary" style="width:100%;margin-top:10px">Accesează resurse</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🎯 Obiective următoare</h4>
+          <ul style="font-size:14px">
+            <li>Completează quiz-ul de etică AI</li>
+            <li>Folosește AI pentru 2 proiecte școlare</li>
+            <li>Participă la discuția despre dependență digitală</li>
+          </ul>
+          <button onclick="setLearningGoals()" class="secondary" style="width:100%;margin-top:10px">Setează obiective</button>
+        </div>
+      </div>
+    `}
+  </div>
+  `;
+};
+
+// Pagina Surse & Verificare
+pages.sources = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>📚 Surse & Verificare informații</h2>
+    
+    <h3>🔍 Cum să verifici informații de la ChatGPT</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div><b>Nu acceptă orice ca adevăr absolut</b> - ChatGPT poate genera informații incorecte</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div><b>Caută surse multiple</b> - Verifică pe site-uri oficiale, enciclopedii, publicații științifice</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div><b>Verifică data informațiilor</b> - ChatGPT are cut-off date și poate nu are informații actuale</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div><b>Folosește verificarea încrucișată</b> - Compară cu ceea ce știi deja sau cu surse de încredere</div>
+      </div>
+    </div>
+    
+    <h3>✅ Surse de încredere recomandate</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🌍 Internaționale</h4>
+        <ul style="font-size:14px">
+          <li>Google Scholar - articole academice</li>
+          <li>Wikipedia (cu verificare referințe)</li>
+          <li>ArXiv - cercetare științifică</li>
+          <li>Khan Academy - educație gratuită</li>
+          <li>UNESCO Digital Library</li>
+        </ul>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🇷🇴 Românești</h4>
+        <ul style="font-size:14px">
+          <li>Enciclopedia României</li>
+          <li>Biblioteca Digitală a României</li>
+          <li>Ministerul Educației</li>
+          <li>Institutul Național de Statistică</li>
+          <li>Universități românești oficiale</li>
+        </ul>
+      </div>
+    </div>
+    
+    <h3>🎮 Exercițiu practic: Verificarea unei informații</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Informația de verificat:</b> "Primul computer românesc a fost creat în 1957 la Institutul de Fizică Atomică"</p>
+      
+      <div style="margin:15px 0">
+        <label><b>Pașii tăi de verificare:</b></label>
+        <textarea id="verificationSteps" rows="4" placeholder="Notează cum ai verifica această informație..."></textarea>
+      </div>
+      
+      <button onclick="checkVerificationExercise()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}">✅ Verifică exercițiul</button>
+      <button onclick="showAnswer()" class="secondary">👁️ Vezi răspuns corect</button>
+      
+      <div id="verificationResult" style="display:none;margin-top:15px;padding:15px;background:rgba(102,255,204,.1);border-radius:12px">
+        <h4>Răspuns corect:</h4>
+        <ol>
+          <li>Caută "istoria informaticii în România" pe Google</li>
+          <li>Verifică site-urile universităților românești (UB, UBB)</li>
+          <li>Caută în arhivele Institutului de Fizică Atomică</li>
+          <li>Consultă enciclopedia digitală a României</li>
+          <li>Verifică publicații științifice românești</li>
+        </ol>
+        <p><i>Corect: Primul computer românesc a fost CIFA-1, creat în 1957.</i></p>
+      </div>
+    </div>
+    
+    <h3>🛠️ Instrumente de verificare</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+      <button onclick="openFactChecker()" class="secondary">🔍 Fact-checker online</button>
+      <button onclick="openReverseImageSearch()" class="secondary">🖼️ Căutare inversă imagini</button>
+      <button onclick="openSourceValidator()" class="secondary">📊 Validator surse</button>
+      <button onclick="openCitationGenerator()" class="secondary">📝 Generator citări</button>
+    </div>
+    
+    ${isTeacher ? `
+      <h3>👨‍🏫 Activitate pentru clasă</h3>
+      <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px;margin:15px 0">
+        <h4>📋 Scenariu de verificare</h4>
+        <p><b>Tema:</b> Elevii primesc 5 afirmații generate de ChatGPT și trebuie să le verifice.</p>
+        <p><b>Obiective:</b> Dezvoltarea gândirii critice și a competențelor de verificare a surselor.</p>
+        <button onclick="downloadVerificationActivity()" class="teacher-btn">📥 Descarcă activitatea</button>
+      </div>
+    ` : ''}
+  </div>
+  `;
+};
+
+// Pagina Etica
+pages.ethics = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>⚖️ Etica în utilizarea ChatGPT</h2>
+    
+    <h3>📜 Principii etice fundamentale</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+      <div style="padding:20px;background:rgba(255,255,255,.05);border-radius:12px">
+        <h4>✅ Ce este acceptabil</h4>
+        <ul>
+          <li>Folosirea ca instrument de brainstorming</li>
+          <li>Obținerea de explicații și clarificări</li>
+          <li>Corectarea gramaticală și stilistică</li>
+          <li>Generarea de idei și structuri</li>
+          <li>Exersarea conversațiilor în limbi străine</li>
+        </ul>
+      </div>
+      <div style="padding:20px;background:rgba(255,255,255,.05);border-radius:12px">
+        <h4>❌ Ce nu este acceptabil</h4>
+        <ul>
+          <li>Copierea textului generat ca propriul tău</li>
+          <li>Folosirea la examene sau teste fără permisiune</li>
+          <li>Generarea de conținut plagiat</li>
+          <li>Înșelarea profesorilor sau colegilor</li>
+          <li>Crearea de dezinformare intenționată</li>
+        </ul>
+      </div>
+    </div>
+    
+    <h3>📝 Declarația de transparență</h3>
+    <div style="background:rgba(102,255,204,.1);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Când și cum să menționezi utilizarea AI:</b></p>
+      
+      <div style="margin:15px 0">
+        <p><b>Exemplu corect de declarație:</b></p>
+        <div style="padding:10px;background:rgba(0,0,0,.3);border-radius:8px;font-size:14px">
+          <i>"În elaborarea acestei lucrări, am folosit ChatGPT pentru a genera idei inițiale și pentru a verifica structura. 
+          Toate informațiile au fost verificate din surse oficiale, iar textul a fost scris în întregime de mine."</i>
+        </div>
+      </div>
+      
+      <button onclick="generateEthicsStatement()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}">📝 Generează declarație personalizată</button>
+    </div>
+    
+    <h3>⚖️ Dileme etice - Ce ai face?</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>📚 Situația 1</h4>
+        <p><b>Ai un eseu dificil pentru mâine. Un coleg îți spune că ChatGPT poate scrie tot eseuul în 2 minute.</b></p>
+        <select id="dilemma1" style="width:100%;margin:10px 0">
+          <option value="">Alege răspunsul...</option>
+          <option value="1">Folosesc ChatGPT și predau eseuul generat</option>
+          <option value="2">Folosesc ChatGPT doar pentru idei, apoi scriu eu</option>
+          <option value="3">Nu folosesc ChatGPT deloc</option>
+          <option value="4">Întreb profesorul dacă pot folosi ChatGPT</option>
+        </select>
+        <button onclick="checkDilemma(1)" class="secondary">Verifică răspunsul</button>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>📊 Situația 2</h4>
+        <p><b>AI îți oferă informații care contrazic manualul școlar. Ce faci?</b></p>
+        <select id="dilemma2" style="width:100%;margin:10px 0">
+          <option value="">Alege răspunsul...</option>
+          <option value="1">Consider că AI are dreptate</option>
+          <option value="2">Verific în surse oficiale ambele variante</option>
+          <option value="3">Întreb profesorul</option>
+          <option value="4">Ignor informația de la AI</option>
+        </select>
+        <button onclick="checkDilemma(2)" class="secondary">Verifică răspunsul</button>
+      </div>
+    </div>
+    
+    ${isTeacher ? `
+      <h3>👨‍🏫 Resurse pentru predarea eticii AI</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+        <button onclick="downloadEthicsLessonPlan()" class="teacher-btn">📋 Plan lecție etică AI</button>
+        <button onclick="downloadCaseStudies()" class="secondary">📖 Studii de caz etice</button>
+        <button onclick="downloadEthicsRubric()" class="secondary">📊 Rubrică evaluare etică</button>
+        <button onclick="openEthicsDiscussionGuide()" class="secondary">💬 Ghid discuții etice</button>
+      </div>
+    ` : `
+      <h3>🎓 Ghidul elevului etic</h3>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px;margin:15px 0">
+        <p><b>Reguli simple pentru utilizare etică:</b></p>
+        <ol>
+          <li>Transparență totală - spune când folosești AI</li>
+          <li>Responsabilitate - tu răspunzi pentru conținutul final</li>
+          <li>Verificare - nu crezi orice, verifică întotdeauna</li>
+          <li>Respect - nu folosi AI pentru a înșela sau răni</li>
+          <li>Învățare - folosește AI să înveți, nu să eviți învățarea</li>
+        </ol>
+        <button onclick="downloadEthicsGuide()" class="student-btn">📥 Descarcă ghidul complet</button>
+      </div>
+    `}
+  </div>
+  `;
+};
+
+// Pagina Dependență
+pages.addiction = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>📵 Dependența de tehnologie și AI</h2>
+    
+    <h3>⚠️ Semne de avertizare</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;background:rgba(255,107,107,.1);border-radius:12px">
+        <h4>🚨 Semne fizice și comportamentale</h4>
+        <ul>
+          <li>Nu poți începe o temă fără să consulți ChatGPT</li>
+          <li>Petreci mai mult timp cu AI decât cu oameni reali</li>
+          <li>Te simți anxios când nu ai acces la AI</li>
+          <li>Începi să depinzi de AI pentru decizii simple</li>
+          <li>Pierzi abilitatea de a rezolva probleme singur</li>
+        </ul>
+      </div>
+      <div style="padding:15px;background:rgba(255,107,107,.1);border-radius:12px">
+        <h4>📚 Semne academice</h4>
+        <ul>
+          <li>Performanța scade când trebuie să lucrezi fără AI</li>
+          <li>Nu mai înțelegi conceptele, doar copiezi răspunsuri</li>
+          <li>Pierzi creativitatea și gândirea originală</li>
+          <li>Devii dependent de validarea AI pentru munca ta</li>
+          <li>Nu mai poți scrie fără verificări AI</li>
+        </ul>
+      </div>
+    </div>
+    
+    <h3>📊 Test de autoevaluare</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Răspunde sincer la următoarele întrebări:</b></p>
+      
+      <div id="addictionTest">
+        <div style="margin:15px 0">
+          <p>1. Cât de des folosești ChatGPT pentru teme școlare?</p>
+          <select id="q1" style="width:100%">
+            <option value="0">Rar sau niciodată</option>
+            <option value="1">O dată pe săptămână</option>
+            <option value="2">Zilnic pentru unele teme</option>
+            <option value="3">Pentru toate temele</option>
+          </select>
+        </div>
+        
+        <div style="margin:15px 0">
+          <p>2. Ce faci când întâmpini o problemă dificilă?</p>
+          <select id="q2" style="width:100%">
+            <option value="0">Încerc să o rezolv singur</option>
+            <option value="1">Întreb un profesor sau coleg</option>
+            <option value="2">Caut pe internet</option>
+            <option value="3">Întreb ChatGPT imediat</option>
+          </select>
+        </div>
+        
+        <div style="margin:15px 0">
+          <p>3. Cum te simți când nu ai acces la ChatGPT?</p>
+          <select id="q3" style="width:100%">
+            <option value="0">Normal, nu îmi afectează munca</option>
+            <option value="1">Puțin incomod, dar mă descurc</option>
+            <option value="2">Anxios, simt că îmi lipsește ceva</option>
+            <option value="3">Panicat, nu pot lucra deloc</option>
+          </select>
+        </div>
+      </div>
+      
+      <button onclick="calculateAddictionScore()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}">📊 Calculează scorul</button>
+      
+      <div id="addictionResult" style="display:none;margin-top:20px;padding:15px;border-radius:12px"></div>
+    </div>
+    
+    <h3>🛡️ Strategii de prevenire</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>⏰ Managementul timpului</h4>
+        <ul style="font-size:14px">
+          <li>Stabilește limite clare pentru utilizare</li>
+          <li>Folosește timer pentru sesiunile cu AI</li>
+          <li>Creează "zone fără tehnologie"</li>
+          <li>Planifică pauze regulate</li>
+        </ul>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🧠 Dezvoltarea independenței</h4>
+        <ul style="font-size:14px">
+          <li>Începe întotdeauna fără AI</li>
+          <li>Folosește AI doar pentru verificare</li>
+          <li>Exersează gândirea critică zilnic</li>
+          <li>Învață să tolerezi dificultatea</li>
+        </ul>
+      </div>
+    </div>
+    
+    ${isTeacher ? `
+      <h3>👨‍🏫 Cum să ajuți elevii cu dependența</h3>
+      <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px;margin:15px 0">
+        <p><b>Strategii pentru profesori:</b></p>
+        <ol>
+          <li>Observă semnele de avertizare în lucrările elevilor</li>
+          <li>Creează activități care necesită gândire independentă</li>
+          <li>Discută despre dependență deschis în clasă</li>
+          <li>Colaborează cu consilierii școlari</li>
+          <li>Implementează politici clare de utilizare AI</li>
+        </ol>
+        <button onclick="downloadAddictionResources()" class="teacher-btn">📥 Resurse pentru profesori</button>
+      </div>
+    ` : `
+      <h3>🆘 Dacă ai probleme cu dependența</h3>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px;margin:15px 0">
+        <p><b>Pași pentru depășirea dependenței:</b></p>
+        <ol>
+          <li>Recunoaște că ai o problemă</li>
+          <li>Vorbește cu un profesor sau părinte</li>
+          <li>Stabilește progresiv limite</li>
+          <li>Caută activități alternative</li>
+          <li>Consultă un specialist dacă e necesar</li>
+        </ol>
+        <button onclick="getHelp()" class="student-btn">🆘 Obține ajutor</button>
+      </div>
+    `}
+  </div>
+  `;
+};
+
+// Pagina Studii de caz
+pages.cases = () => {
+  return `
+  <div class="card">
+    <h2>📖 Studii de caz reale</h2>
+    
+    <div class="tab-container">
+      <div class="tab active" onclick="switchCaseTab('success')">✅ Succes</div>
+      <div class="tab" onclick="switchCaseTab('failure')">❌ Probleme</div>
+      <div class="tab" onclick="switchCaseTab('mixed')">⚠️ Ambiguitate</div>
+    </div>
+    
+    <div id="caseContent">
+      <div id="successCases">
+        <h3>✅ Cazuri de succes cu ChatGPT</h3>
+        
+        <div class="case-study">
+          <h4>🎓 Maria - elevă în clasa a XII-a</h4>
+          <p><b>Situația:</b> Maria avea dificultăți cu eseurile de filosofie. Îi lua ore să scrie un eseu.</p>
+          <p><b>Soluția cu AI:</b> A folosit ChatGPT pentru a:</p>
+          <ul>
+            <li>Înțelege conceptele filosofice în termeni simpli</li>
+            <li>Genera structuri logice pentru eseuri</li>
+            <li>Obține exemple practice pentru concepte abstracte</li>
+            <li>Verifica logica argumentelor sale</li>
+          </ul>
+          <p><b>Rezultat:</b> Notele au crescut de la 6-7 la 9-10, iar Maria a dezvoltat încredere în scrierea academică.</p>
+          <p><b>Lecția:</b> AI ca profesor personal, nu ca înlocuitor.</p>
+        </div>
+        
+        <div class="case-study">
+          <h4>👨‍🏫 Profesor Andrei - liceu tehnic</h4>
+          <p><b>Situația:</b> 30 de elevi cu niveluri diferite, un singur profesor.</p>
+          <p><b>Soluția cu AI:</b> A folosit ChatGPT pentru a crea:</p>
+          <ul>
+            <li>Exerciții diferențiate pentru fiecare nivel</li>
+            <li>Explicații alternative pentru concepte dificile</li>
+            <li>Proiecte practice personalizate</li>
+            <li>Teste de evaluare adaptate</li>
+          </ul>
+          <p><b>Rezultat:</b> Participarea a crescut cu 40%, iar rezultatele s-au îmbunătățit pentru toți elevii.</p>
+          <p><b>Lecția:</b> AI poate ajuta la personalizarea învățării la scară.</p>
+        </div>
+      </div>
+      
+      <div id="failureCases" style="display:none">
+        <h3>❌ Cazuri problematice cu ChatGPT</h3>
+        
+        <div class="case-study">
+          <h4>📝 Andrei - student universitar</h4>
+          <p><b>Situația:</b> Andrei a folosit ChatGPT pentru a scrie toate lucrările seminarului.</p>
+          <p><b>Problema:</b> A predat eseuri generate integral de AI fără modificări.</p>
+          <p><b>Consecințe:</b></p>
+          <ul>
+            <li>Detectat de software-ul antiplagiat</li>
+            <li>Suspendat pentru un semestru</li>
+            <li>Pierdut încrederea profesorilor</li>
+            <li>Nu a învățat abilitățile necesare</li>
+          </ul>
+          <p><b>Lecția:</b> Plagiatul cu AI este tot plagiat.</p>
+        </div>
+        
+        <div class="case-study">
+          <h4>🏫 Școala "XYZ" - implementare AI</h4>
+          <p><b>Situația:</b> Școala a implementat ChatGPT pentru toți elevii fără ghidare.</p>
+          <p><b>Problema:</b> Lipsă totală de training și politici.</p>
+          <p><b>Consecințe:</b></p>
+          <ul>
+            <li>Creștere bruscă a cazurilor de plagiat</li>
+            <li>Dependență rapidă a elevilor de AI</li>
+            <li>Scăderea calității gândirii critice</li>
+            <li>Conflict între profesori și elevi</li>
+          </ul>
+          <p><b>Lecția:</b> Implementarea AI necesită planificare și educație.</p>
+        </div>
+      </div>
+      
+      <div id="mixedCases" style="display:none">
+        <h3>⚠️ Cazuri ambigue cu rezultate mixte</h3>
+        
+        <div class="case-study">
+          <h4>🔬 Cercetare școlară</h4>
+          <p><b>Situația:</b> Grup de elevi folosește ChatGPT pentru proiect de cercetare.</p>
+          <p><b>Aspecte pozitive:</b></p>
+          <ul>
+            <li>Generarea rapidă a ideilor</li>
+            <li>Structurare eficientă a raportului</li>
+            <li>Identificarea surselor potențiale</li>
+          </ul>
+          <p><b>Aspecte negative:</b></p>
+          <ul>
+            <li>Informații incorecite generate de AI</li>
+            <li>Elevii nu au înțeles profund subiectul</li>
+            <li>Dependență de validarea AI</li>
+          </ul>
+          <p><b>Concluzie:</b> AI poate accelera procesul, dar riscă să compromită învățarea profundă.</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3>📋 Analizează un caz propriu</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Ai o experiență personală cu ChatGPT în educație? Analizează-o:</b></p>
+      
+      <div style="margin:15px 0">
+        <label>Situația ta:</label>
+        <textarea id="personalCase" rows="4" placeholder="Descrie situația ta..."></textarea>
+      </div>
+      
+      <div style="margin:15px 0">
+        <label>Ce ai făcut cu ChatGPT?</label>
+        <textarea id="chatgptUsage" rows="3" placeholder="Cum l-ai folosit?"></textarea>
+      </div>
+      
+      <div style="margin:15px 0">
+        <label>Ce ai învățat din această experiență?</label>
+        <textarea id="lessonsLearned" rows="3" placeholder="Lecțiile tale..."></textarea>
+      </div>
+      
+      <button onclick="analyzePersonalCase()" class="secondary">📊 Analizează cazul</button>
+      <button onclick="saveCaseStudy()" class="${userRole === 'teacher' ? 'teacher-btn' : 'student-btn'}">💾 Salvează analiza</button>
+    </div>
+    
+    <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px">
+      <h4>📚 Resurse pentru analiză de caz</h4>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+        <button onclick="downloadCaseAnalysisTemplate()" class="secondary">📋 Șablon analiză</button>
+        <button onclick="viewMoreCaseStudies()" class="secondary">📖 Mai multe studii</button>
+        <button onclick="shareYourCase()" class="secondary">📤 Împărtășește-ți cazul</button>
+      </div>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Compare (Sprijin vs Capcană)
+pages.compare = () => {
+  return `
+  <div class="card">
+    <h2>⚖️ ChatGPT: Sprijin vs Capcană</h2>
+    
+    <div class="pro-con">
+      <div class="pro">
+        <h3>✅ SPRIJIN - Când AI ajută</h3>
+        
+        <div style="margin:15px 0">
+          <h4>🎓 Personalizarea învățării</h4>
+          <p>AI poate adapta explicațiile la nivelul fiecărui elev, oferind suport personalizat.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>⏰ Economisire de timp</h4>
+          <p>Profesorii pot genera materiale didactice rapid, iar elevii pot obține răspunsuri instant.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>💡 Dezvoltarea creativității</h4>
+          <p>ChatGPT poate genera idei noi, provocând gândirea laterală și creativitatea.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>🌍 Acces la informații</h4>
+          <p>Elevii din zonele rurale sau cu resurse limitate pot accesa explicații de calitate.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>🔄 Feedback instant</h4>
+          <p>AI poate oferi feedback imediat pe scrieri, cod, sau rezolvări de probleme.</p>
+        </div>
+      </div>
+      
+      <div class="con">
+        <h3>❌ CAPCANĂ - Când AI periclitează</h3>
+        
+        <div style="margin:15px 0">
+          <h4>📉 Scăderea gândirii critice</h4>
+          <p>Dependența de AI poate diminua capacitatea de a analiza și evalua independent.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>🚫 Plagiat și înșelăciune</h4>
+          <p>Ușurința de a genera text duce la tentația de plagiat și înșelat.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>🤖 Pierderea abilităților de bază</h4>
+          <p>Elevii pot pierde abilități fundamentale: scriere, calcul mental, rezolvare probleme.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>⚠️ Dezinformare și bias</h4>
+          <p>AI poate genera informații incorecte sau părtinitoare fără a le semnaliza.</p>
+        </div>
+        
+        <div style="margin:15px 0">
+          <h4>📵 Dependență și izolare</h4>
+          <p>Folosirea excesivă poate duce la dependență și izolare socială.</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3>⚖️ Balansul perfect</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Cum să menții echilibrul între sprijin și capcană:</b></p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div>
+          <h4>🎯 Pentru elevi</h4>
+          <ul>
+            <li>Folosește AI pentru idei, nu pentru răspunsuri finale</li>
+            <li>Verifică tot ce primești de la AI</li>
+            <li>Scrie întotdeauna cu propriile cuvinte</li>
+            <li>Stabilește limite de timp</li>
+            <li>Discută cu profesorii despre utilizare</li>
+          </ul>
+        </div>
+        <div>
+          <h4>👨‍🏫 Pentru profesori</h4>
+          <ul>
+            <li>Educați elevii despre utilizarea responsabilă</li>
+            <li>Creați activități care necesită gândire critică</li>
+            <li>Folosiți AI pentru a diferenția învățarea</li>
+            <li>Implementați politici clare</li>
+            <li>Modelați utilizarea etică</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <h3>📊 Test: Ești în zona sprijin sau capcană?</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <div id="balanceQuiz">
+        <p><b>1. Cât de des revizuiesti și modifici răspunsurile primite de la ChatGPT?</b></p>
+        <select id="bq1" style="width:100%;margin:10px 0">
+          <option value="3">Întotdeauna - completez cu propriile idei</option>
+          <option value="2">Uneori - fac modificări minore</option>
+          <option value="1">Rar - folosesc aproape ca atare</option>
+          <option value="0">Niciodată - copiez exact</option>
+        </select>
+        
+        <p><b>2. Cum folosești ChatGPT pentru proiecte școlare?</b></p>
+        <select id="bq2" style="width:100%;margin:10px 0">
+          <option value="3">Doar pentru brainstorming și structură</option>
+          <option value="2">Pentru idei și corectare</option>
+          <option value="1">Pentru a genera secțiuni întregi</option>
+          <option value="0">Pentru a genera tot proiectul</option>
+        </select>
+        
+        <p><b>3. Ce faci când ChatGPT oferă un răspuns?</b></p>
+        <select id="bq3" style="width:100%;margin:10px 0">
+          <option value="3">Verific în surse oficiale și adaptez</option>
+          <option value="2">Îl folosesc direct, dar îl verific</option>
+          <option value="1">Îl folosesc direct fără verificare</option>
+          <option value="0">Îl predau exact așa cum este</option>
+        </select>
+      </div>
+      
+      <button onclick="calculateBalanceScore()" class="secondary" style="width:100%;margin-top:15px">📊 Vezi rezultatul</button>
+      
+      <div id="balanceResult" style="display:none;margin-top:20px;padding:15px;border-radius:12px"></div>
+    </div>
+    
+    <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px">
+      <h4>🛡️ Plan de acțiune personal</h4>
+      <p><b>Pe baza analizei tale, creează un plan pentru utilizarea optimă a AI:</b></p>
+      <button onclick="createActionPlan()" class="${userRole === 'teacher' ? 'teacher-btn' : 'student-btn'}" style="width:100%">📝 Creează planul tău</button>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Chat Bot
+pages.chat = () => {
+  const isTeacher = userRole === 'teacher';
+  const chatRole = isTeacher ? "profesor" : "elev";
+  
+  return `
+  <div class="card">
+    <h2>💬 Chat bot educațional - Asistent ${chatRole}</h2>
+    
+    <div class="chatlog" id="chatLog">
+      <div class="msg bot">
+        <b>🤖 Asistent EDU:</b> Bună! Sunt aici să te ajut cu întrebări despre utilizarea responsabilă a ChatGPT în educație. Cum te pot ajuta astăzi?
+      </div>
+    </div>
+    
+    <div style="margin:15px 0">
+      <textarea id="chatInput" placeholder="Scrie întrebarea ta aici..." rows="3" style="width:100%"></textarea>
+      <button onclick="sendMessage()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}" style="width:100%;margin-top:10px">📤 Trimite mesaj</button>
+    </div>
+    
+    <h3>💡 Întrebări sugerate</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0">
+      <button onclick="useSuggestedQuestion(1)" class="secondary">🤔 Cum să folosesc ChatGPT pentru un eseu?</button>
+      <button onclick="useSuggestedQuestion(2)" class="secondary">🔍 Cum să verific informații de la AI?</button>
+      <button onclick="useSuggestedQuestion(3)" class="secondary">⚖️ Care sunt regulile etice pentru AI?</button>
+      <button onclick="useSuggestedQuestion(4)" class="secondary">📝 Cum să diferențiez munca mea de cea a AI?</button>
+    </div>
+    
+    <h3>🎯 Modele de conversație</h3>
+    <div class="tab-container">
+      <div class="tab active" onclick="switchChatMode('learning')">🎓 Învățare</div>
+      <div class="tab" onclick="switchChatMode('ethics')">⚖️ Etică</div>
+      <div class="tab" onclick="switchChatMode('projects')">📋 Proiecte</div>
+      <div class="tab" onclick="switchChatMode('troubleshoot')">🛠️ Problem solving</div>
+    </div>
+    
+    ${isTeacher ? `
+      <h3>👨‍🏫 Instrumente speciale pentru profesori</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>📚 Generator de activități</h4>
+          <p>Creează activități educative personalizate pentru clasele tale.</p>
+          <button onclick="generateActivity()" class="secondary" style="width:100%">Generează activitate</button>
+        </div>
+        <div style="padding:15px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>📊 Analizor de răspunsuri</h4>
+          <p>Analizează răspunsurile elevilor pentru detectarea utilizării AI.</p>
+          <button onclick="analyzeStudentResponse()" class="secondary" style="width:100%">Analizează răspuns</button>
+        </div>
+      </div>
+    ` : `
+      <h3>🎓 Instrumente speciale pentru elevi</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>📝 Asistent pentru teme</h4>
+          <p>Primește ghidare pas-cu-pas pentru temele tale.</p>
+          <button onclick="getHomeworkHelp()" class="secondary" style="width:100%">Cere ajutor temă</button>
+        </div>
+        <div style="padding:15px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>🧠 Exerciții de gândire critică</h4>
+          <p>Exersează analiza și evaluarea informațiilor.</p>
+          <button onclick="getCriticalThinkingExercise()" class="secondary" style="width:100%">Începe exercițiu</button>
+        </div>
+      </div>
+    `}
+    
+    <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px">
+      <h4>⚙️ Setări chat</h4>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <label><input type="checkbox" id="saveChat" checked> Salvează conversația</label>
+        </div>
+        <div>
+          <button onclick="clearChat()" class="secondary">🗑️ Șterge chat</button>
+          <button onclick="exportChat()" class="secondary">💾 Exportă chat</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Educația 2030
+pages.future = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>🚀 Educația în era AI - Perspectiva 2030</h2>
+    
+    <h3>🔮 Tendențe și predicții</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+      <div style="padding:20px;background:rgba(122,162,255,.1);border-radius:12px">
+        <h4>📈 Ce se va schimba</h4>
+        <ul>
+          <li><b>Personalizare extremă:</b> Fiecare elev va avea un curriculum unic</li>
+          <li><b>Evaluare continuă:</b> Fără examene tradiționale, cu feedback constant</li>
+          <li><b>Realitate augmentată:</b> Învățare prin experiențe immersive</li>
+          <li><b>Colaborare globală:</b> Proiecte internaționale în timp real</li>
+          <li><b>Învățare pe viață:</b> Educație continuă adaptată la evoluția joburilor</li>
+        </ul>
+      </div>
+      <div style="padding:20px;background:rgba(88,214,197,.1);border-radius:12px">
+        <h4>🎯 Competențe cheie pentru 2030</h4>
+        <ul>
+          <li><b>Gândire critică:</b> Analiza informațiilor în era dezinformării</li>
+          <li><b>Inteligență emoțională:</b> Relații umane în mediul digital</li>
+          <li><b>Alfabetizare AI:</b> Utilizare etică și eficientă a tehnologiei</li>
+          <li><b>Creativitate:</b> Ceea ce AI nu poate înlocui</li>
+          <li><b>Adaptabilitate:</b> Învățarea continuă a noilor tehnologii</li>
+        </ul>
+      </div>
+    </div>
+    
+    <h3>🏫 Școala viitorului</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Cum va arăta o zi la școală în 2030?</b></p>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">8:00</div>
+          <div><b>Plan personalizat:</b> Fiecare elev primește planul zilei adaptat progresului său</div>
+        </div>
+        <div class="step">
+          <div class="step-num">9:00</div>
+          <div><b>Lecție colaborativă:</b> Elevii din diferite țări rezolvă probleme globale împreună</div>
+        </div>
+        <div class="step">
+          <div class="step-num">11:00</div>
+          <div><b>Atelier cu AI:</b> Folosesc AI pentru a crea proiecte inovative cu ghidarea profesorului</div>
+        </div>
+        <div class="step">
+          <div class="step-num">14:00</div>
+          <div><b>Feedback în timp real:</b> AI oferă feedback instant, profesorul se concentrează pe mentoring</div>
+        </div>
+      </div>
+    </div>
+    
+    <h3>🤖 Rolul profesorului în viitor</h3>
+    <div style="padding:20px;background:rgba(255,153,102,.1);border-radius:12px;margin:15px 0">
+      <p><b>Profesorul nu va fi înlocuit de AI, ci va deveni:</b></p>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:10px;text-align:center">
+          <div style="font-size:24px">🧠</div>
+          <div><b>Facilitator de gândire</b></div>
+          <p style="font-size:12px">Ghidarea proceselor de învățare profundă</p>
+        </div>
+        <div style="padding:10px;text-align:center">
+          <div style="font-size:24px">💖</div>
+          <div><b>Mentor emoțional</b></div>
+          <p style="font-size:12px">Dezvoltarea inteligenței emoționale</p>
+        </div>
+        <div style="padding:10px;text-align:center">
+          <div style="font-size:24px">🌍</div>
+          <div><b>Coordonator de proiecte</b></div>
+          <p style="font-size:12px">Managementul învățării prin experiență</p>
+        </div>
+      </div>
+    </div>
+    
+    <h3>📊 Pregătirea pentru viitor</h3>
+    ${isTeacher ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>👨‍🏫 Pentru profesori</h4>
+          <ul style="font-size:14px">
+            <li>Cursuri de alfabetizare AI continuă</li>
+            <li>Comunități de practică pentru inovație</li>
+            <li>Resurse pentru transformarea pedagogiei</li>
+            <li>Training pentru mentoring și coaching</li>
+          </ul>
+          <button onclick="downloadTeacherFutureGuide()" class="teacher-btn" style="width:100%;margin-top:10px">📥 Ghid de pregătire</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🏫 Pentru școli</h4>
+          <ul style="font-size:14px">
+            <li>Planuri de transformare digitală</li>
+            <li>Infrastructură pentru educația viitorului</li>
+            <li>Politici de etică și securitate digitală</li>
+            <li>Parteneriate cu industria tehnologică</li>
+          </ul>
+          <button onclick="downloadSchoolTransformationPlan()" class="secondary" style="width:100%;margin-top:10px">📥 Plan de transformare</button>
+        </div>
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🎓 Pentru elevi</h4>
+          <ul style="font-size:14px">
+            <li>Dezvoltarea portofoliului digital</li>
+            <li>Proiecte practice cu tehnologii emergente</li>
+            <li>Cursuri de gândire critică și creativitate</li>
+            <li>Experiențe de învățare globală</li>
+          </ul>
+          <button onclick="downloadStudentFutureGuide()" class="student-btn" style="width:100%;margin-top:10px">📥 Ghid de pregătire</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>👨‍👩‍👧‍👦 Pentru părinți</h4>
+          <ul style="font-size:14px">
+            <li>Ghid pentru sprijinirea copiilor în era digitală</li>
+            <li>Resurse pentru navigarea în educația viitorului</li>
+            <li>Workshop-uri pentru parenting digital</li>
+            <li>Comunități de sprijin pentru părinți</li>
+          </ul>
+          <button onclick="downloadParentFutureGuide()" class="secondary" style="width:100%;margin-top:10px">📥 Ghid pentru părinți</button>
+        </div>
+      </div>
+    `}
+    
+    <h3>🎯 Vizualizează-ți viitorul educațional</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Creează propria ta viziune pentru educația ta în 2030:</b></p>
+      
+      <div style="margin:15px 0">
+        <label>Ce abilități vrei să dezvolți până în 2030?</label>
+        <textarea id="futureSkills" rows="3" placeholder="Scrie aici..."></textarea>
+      </div>
+      
+      <div style="margin:15px 0">
+        <label>Cum îți imaginezi că vei folosi AI în învățare peste 5 ani?</label>
+        <textarea id="futureAIUsage" rows="3" placeholder="Scrie aici..."></textarea>
+      </div>
+      
+      <button onclick="createFutureVision()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}" style="width:100%">🚀 Generează viziunea ta</button>
+      
+      <div id="futureVisionResult" style="display:none;margin-top:20px;padding:15px;background:rgba(102,255,204,.1);border-radius:12px"></div>
+    </div>
+    
+    <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px">
+      <h4>🤝 Implică-te în crearea viitorului</h4>
+      <p>Educația viitorului se construiește împreună. Contribuie cu ideile tale!</p>
+      <button onclick="shareFutureIdeas()" class="secondary" style="width:100%">💡 Împărtășește-ți ideile</button>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Clase (doar pentru profesori)
+pages.classes = () => {
+  if (userRole !== 'teacher') {
+    return `<div class="card"><h2>🚫 Acces restricționat</h2><p>Această secțiune este disponibilă doar pentru profesori.</p></div>`;
+  }
+  
+  return `
+  <div class="card">
+    <h2>👥 Managementul claselor</h2>
+    <p>Gestionează clasele tale, adaugă elevi și monitorizează activitatea.</p>
+    
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+      <button onclick="createNewClass()" class="teacher-btn">➕ Adaugă clasă nouă</button>
+      <button onclick="importStudents()" class="secondary">📥 Importă elevi</button>
+    </div>
+    
+    <h3>Clasele active</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:20px;margin:20px 0">
+      ${userClasses.map(cls => `
+        <div style="padding:20px;border:1px solid var(--border);border-radius:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="margin:0">${cls.name}</h3>
+            <span class="teacher-tag">${cls.subject}</span>
+          </div>
+          <p><b>Elevi:</b> ${cls.students}</p>
+          <p><b>Teme active:</b> ${userAssignments.filter(a => a.class === cls.name).length}</p>
+          <div style="margin-top:15px">
+            <button onclick="manageClass('${cls.name}')" class="secondary" style="width:100%;margin-bottom:5px">👥 Gestionează elevi</button>
+            <button onclick="viewClassAssignments('${cls.name}')" class="secondary" style="width:100%;margin-bottom:5px">📝 Vezi teme</button>
+            <button onclick="viewClassAnalytics('${cls.name}')" class="secondary" style="width:100%">📈 Analize clasă</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    
+    <h3>📊 Statistici generale claselor</h3>
+    <table class="table">
+      <tr><th>Clasă</th><th>Utilizare AI medie</th><th>Procent completare teme</th><th>Performanță medie</th><th>Evaluare etică</th></tr>
+      <tr>
+        <td>XI A</td>
+        <td><div class="progress"><div class="bar" style="width:68%"></div></div> 68%</td>
+        <td><div class="progress"><div class="bar" style="width:85%"></div></div> 85%</td>
+        <td><div class="progress"><div class="bar" style="width:78%"></div></div> 7.8/10</td>
+        <td><span class="tag teacher-tag">Bună</span></td>
+      </tr>
+      <tr>
+        <td>XII B</td>
+        <td><div class="progress"><div class="bar" style="width:72%"></div></div> 72%</td>
+        <td><div class="progress"><div class="bar" style="width:91%"></div></div> 91%</td>
+        <td><div class="progress"><div class="bar" style="width:82%"></div></div> 8.2/10</td>
+        <td><span class="tag teacher-tag">Foarte bună</span></td>
+      </tr>
+      <tr>
+        <td>X C</td>
+        <td><div class="progress"><div class="bar" style="width:55%"></div></div> 55%</td>
+        <td><div class="progress"><div class="bar" style="width:78%"></div></div> 78%</td>
+        <td><div class="progress"><div class="bar" style="width:65%"></div></div> 6.5/10</td>
+        <td><span class="tag" style="background:rgba(255,107,107,.3)">Necesită atenție</span></td>
+      </tr>
+    </table>
+    
+    <h3>📋 Rapoarte și exporturi</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+      <button onclick="generateClassReport('all')" class="secondary">📄 Raport general claselor</button>
+      <button onclick="exportClassData('XI A')" class="secondary">📊 Export date XI A</button>
+      <button onclick="generateParentLetters()" class="secondary">📧 Scrisori pentru părinți</button>
+      <button onclick="viewEthicsReport()" class="secondary">⚖️ Raport etică AI</button>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Teme & Proiecte (doar pentru profesori)
+pages.assignments = () => {
+  if (userRole !== 'teacher') {
+    return `<div class="card"><h2>🚫 Acces restricționat</h2><p>Această secțiune este disponibilă doar pentru profesori.</p></div>`;
+  }
+  
+  return `
+  <div class="card">
+    <h2>📋 Managementul temelor și proiectelor</h2>
+    <p>Creează, atribuie și evaluează teme și proiecte pentru clasele tale.</p>
+    
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+      <button onclick="createNewAssignment()" class="teacher-btn">➕ Tema nouă</button>
+      <button onclick="useAIToGenerateAssignment()" class="secondary">🤖 Generează cu AI</button>
+      <button onclick="viewAllSubmissions()" class="secondary">📥 Toate încărcările</button>
+    </div>
+    
+    <h3>Teme active</h3>
+    <table class="table">
+      <tr><th>Titlu</th><th>Clasă</th><th>Dată atribuire</th><th>Încărcări</th><th>Stare</th><th>Acțiuni</th></tr>
+      ${userAssignments.map(assignment => `
+        <tr>
+          <td>${assignment.title}</td>
+          <td>${assignment.class}</td>
+          <td>${assignment.assigned}</td>
+          <td>${assignment.submissions}/${assignment.total}</td>
+          <td>
+            <div class="progress" style="width:100px;display:inline-block;margin-right:10px">
+              <div class="bar" style="width:${(assignment.submissions/assignment.total)*100}%"></div>
+            </div>
+            ${Math.round((assignment.submissions/assignment.total)*100)}%
+          </td>
+          <td>
+            <button onclick="gradeAssignment(${assignment.id})" class="secondary" style="padding:5px 10px">📝 Notează</button>
+            <button onclick="viewAssignmentDetails(${assignment.id})" class="secondary" style="padding:5px 10px">👁️ Vezi</button>
+          </td>
+        </tr>
+      `).join('')}
+    </table>
+    
+    <h3>🤖 Generator de teme cu AI</h3>
+    <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+      <p><b>Generează rapid o temă personalizată:</b></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div>
+          <label>Clasa:</label>
+          <select id="assignmentClass" style="width:100%">
+            ${userClasses.map(cls => `<option value="${cls.name}">${cls.name} - ${cls.subject}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label>Tip temă:</label>
+          <select id="assignmentType" style="width:100%">
+            <option value="project">Proiect</option>
+            <option value="essay">Eseu</option>
+            <option value="research">Cercetare</option>
+            <option value="problem">Probleme practice</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin:15px 0">
+        <label>Subiect/temă:</label>
+        <input type="text" id="assignmentTopic" placeholder="Ex: Etica în utilizarea ChatGPT" style="width:100%">
+      </div>
+      <button onclick="generateAssignmentWithAI()" class="teacher-btn" style="width:100%">🚀 Generează temă cu AI</button>
+    </div>
+    
+    <h3>📊 Rubrici de evaluare AI</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🎯 Originalitate</h4>
+        <ul style="font-size:14px">
+          <li>Rescriere cu propriile cuvinte</li>
+          <li>Adăugarea de perspective personale</li>
+          <li>Integrarea surselor multiple</li>
+          <li>Creativitate în abordare</li>
+        </ul>
+        <button onclick="viewRubric('originality')" class="secondary" style="width:100%;margin-top:10px">Vezi rubrică completă</button>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>⚖️ Etică AI</h4>
+        <ul style="font-size:14px">
+          <li>Transparență utilizare AI</li>
+          <li>Verificare surse</li>
+          <li>Atribuire corectă</li>
+          <li>Declarație etică inclusă</li>
+        </ul>
+        <button onclick="viewRubric('ethics')" class="secondary" style="width:100%;margin-top:10px">Vezi rubrică completă</button>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🧠 Gândire critică</h4>
+        <ul style="font-size:14px">
+          <li>Analiză și evaluare</li>
+          <li>Argumentare logică</li>
+          <li>Contraargumente</li>
+          <li>Sinteză personală</li>
+        </ul>
+        <button onclick="viewRubric('critical')" class="secondary" style="width:100%;margin-top:10px">Vezi rubrică completă</button>
+      </div>
+    </div>
+    
+    <h3>🔍 Detector de plagiat și utilizare AI</h3>
+    <div style="background:rgba(255,107,107,.1);padding:15px;border-radius:12px;margin:15px 0">
+      <p><b>Încarcă o lucrare pentru analiză:</b></p>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <input type="file" id="fileUpload" accept=".doc,.docx,.pdf,.txt" style="flex-grow:1">
+        <button onclick="analyzeDocument()" class="secondary">🔍 Analizează</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">
+        <i>Sistemul detectează similaritatea cu surse online și indicii de generare AI.</i>
+      </p>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Analize (doar pentru profesori)
+pages.analytics = () => {
+  if (userRole !== 'teacher') {
+    return `<div class="card"><h2>🚫 Acces restricționat</h2><p>Această secțiune este disponibilă doar pentru profesori.</p></div>`;
+  }
+  
+  return `
+  <div class="card">
+    <h2>📈 Analize și statistici detaliate</h2>
+    <p>Analizează performanța elevilor, utilizarea AI și progresul general.</p>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <div style="font-size:24px">📊</div>
+        <div><b>Analize complete</b></div>
+        <div style="color:var(--accent)">15</div>
+      </div>
+      <div class="stat-item">
+        <div style="font-size:24px">👁️</div>
+        <div><b>Vizualizări</b></div>
+        <div style="color:var(--accent2)">247</div>
+      </div>
+      <div class="stat-item">
+        <div style="font-size:24px">🎯</div>
+        <div><b>Predicții</b></div>
+        <div style="color:var(--warn)">89% acuratețe</div>
+      </div>
+      <div class="stat-item">
+        <div style="font-size:24px">⏰</div>
+        <div><b>Timp economisit</b></div>
+        <div style="color:var(--accent2)">42h</div>
+      </div>
+    </div>
+    
+    <h3>📈 Analize generale utilizare AI</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+      <div style="padding:20px;border:1px solid var(--border);border-radius:12px">
+        <h4>📊 Utilizare AI pe clase</h4>
+        <div style="margin:15px 0">
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>XI A</span>
+            <span><div class="progress" style="width:150px;display:inline-block"><div class="bar" style="width:68%"></div></div> 68%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>XII B</span>
+            <span><div class="progress" style="width:150px;display:inline-block"><div class="bar" style="width:72%"></div></div> 72%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>X C</span>
+            <span><div class="progress" style="width:150px;display:inline-block"><div class="bar" style="width:55%"></div></div> 55%</span>
+          </div>
+        </div>
+        <p><small><i>Procentul elevilor care raportează utilizarea regulată a AI</i></small></p>
+      </div>
+      <div style="padding:20px;border:1px solid var(--border);border-radius:12px">
+        <h4>📈 Impact asupra performanței</h4>
+        <div style="margin:15px 0">
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>Folosesc AI responsabil</span>
+            <span>8.4/10</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>Nu folosesc AI</span>
+            <span>7.1/10</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin:5px 0">
+            <span>Dependență de AI</span>
+            <span>5.8/10</span>
+          </div>
+        </div>
+        <p><small><i>Medie note în funcție de tipul de utilizare AI</i></small></p>
+      </div>
+    </div>
+    
+    <h3>⚠️ Identificare elevi cu risc</h3>
+    <table class="table">
+      <tr><th>Elev</th><th>Clasă</th><th>Risc dependență</th><th>Probleme etice</th><th>Performanță</th><th>Acțiuni recomandate</th></tr>
+      <tr>
+        <td>Mihai Popescu</td>
+        <td>XI A</td>
+        <td><span class="tag" style="background:rgba(255,107,107,.3)">Ridicat</span></td>
+        <td>2 avertismente plagiat</td>
+        <td>↓ 15% ultima lună</td>
+        <td><button onclick="createInterventionPlan(1)" class="secondary">📋 Plan intervenție</button></td>
+      </tr>
+      <tr>
+        <td>Elena Dumitru</td>
+        <td>XII B</td>
+        <td><span class="tag" style="background:rgba(255,204,102,.3)">Moderat</span></td>
+        <td>Transparență insuficientă</td>
+        <td>→ Stabilă</td>
+        <td><button onclick="scheduleMeeting(2)" class="secondary">📅 Programează discuție</button></td>
+      </tr>
+      <tr>
+        <td>Andrei Ionescu</td>
+        <td>X C</td>
+        <td><span class="tag" style="background:rgba(88,214,197,.3)">Scăzut</span></td>
+        <td>Nicio problemă</td>
+        <td>↑ 22% ultima lună</td>
+        <td><button onclick="acknowledgeGoodPractice(3)" class="secondary">🏆 Laudă</button></td>
+      </tr>
+    </table>
+    
+    <h3>📋 Rapoarte avansate</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>📄 Raport complet clasă</h4>
+        <p>Analiză detaliată a fiecărei clase: performanță, utilizare AI, recomandări.</p>
+        <select id="classReportSelect" style="width:100%;margin:10px 0">
+          ${userClasses.map(cls => `<option value="${cls.name}">${cls.name} - ${cls.subject}</option>`).join('')}
+        </select>
+        <button onclick="generateDetailedClassReport()" class="teacher-btn" style="width:100%">Generează raport</button>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>📈 Analiză predicțivă</h4>
+        <p>Predicții performanță viitoare bazate pe datele curente.</p>
+        <button onclick="runPredictiveAnalysis()" class="teacher-btn" style="width:100%;margin-bottom:10px">Rulează analiză</button>
+        <button onclick="viewTrends()" class="secondary" style="width:100%">Vezi tendințe</button>
+      </div>
+    </div>
+    
+    <h3>🛠️ Instrumente de analiză</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+      <button onclick="openCorrelationTool()" class="secondary">📊 Analiză corelații</button>
+      <button onclick="openComparisonTool()" class="secondary">⚖️ Comparație clase</button>
+      <button onclick="openTimelineView()" class="secondary">📅 Vizualizare temporală</button>
+      <button onclick="exportAllAnalytics()" class="secondary">💾 Export toate datele</button>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina AI (conținut diferit pentru elevi/profesori)
+pages.ai = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>${isTeacher ? '👨‍🏫' : '🎓'} Inteligența Artificială în Educație</h2>
+    ${isTeacher ? `
+      <p><b>Perspectiva profesorului:</b> Cum să integrezi AI în predare și să înveți elevii să-l folosească responsabil.</p>
+      
+      <h3>🎯 Strategii de integrare AI în predare</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+        <div style="padding:20px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>📚 Planificare lecții</h4>
+          <ul>
+            <li>Folosește AI pentru a genera idei de activități</li>
+            <li>Creează materiale didactice diferențiate</li>
+            <li>Generează întrebări pentru discuții</li>
+            <li>Adaptează conținutul pentru diferite niveluri</li>
+          </ul>
+        </div>
+        <div style="padding:20px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>👥 Managementul clasei</h4>
+          <ul>
+            <li>Monitorizează utilizarea AI de către elevi</li>
+            <li>Identifică tendințe și probleme</li>
+            <li>Personalizează feedback-ul</li>
+            <li>Automatizează sarcini administrative</li>
+          </ul>
+        </div>
+      </div>
+      
+      <h3>🛠️ Instrumente AI pentru profesori</h3>
+      <table class="table">
+        <tr><th>Instrument</th><th>Utilizare</th><th>Beneficiu</th></tr>
+        <tr><td><b>Generator de teme</b></td><td>Creează teme și teste personalizate</td><td>Economisește timp, diversificare</td></tr>
+        <tr><td><b>Analizor de răspunsuri</b></td><td>Analizează și oferă feedback automat</td><td>Feedback instant, obiectiv</td></tr>
+        <tr><td><b>Detector de plagiat AI</b></td><td>Identifică texte generate de AI</td><td>Asigură integritate academică</td></tr>
+        <tr><td><b>Planificator de curriculum</b></td><td>Sugerează structura și conținut</td><td>Curriculum optimizat</td></tr>
+      </table>
+      
+      <h3>📋 Ghid pentru predarea eticii AI</h3>
+      <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+        <p><b>Obiective de învățare pentru elevi:</b></p>
+        <ol>
+          <li>Să înțeleagă cum funcționează ChatGPT și limitele sale</li>
+          <li>Să folosească AI ca instrument, nu ca înlocuitor al gândirii</li>
+          <li>Să verifice informațiile obținute de la AI</li>
+          <li>Să practice transparența în utilizarea AI</li>
+          <li>Să recunoască și să evite dependența de AI</li>
+        </ol>
+        
+        <div style="margin-top:20px">
+          <button onclick="downloadTeachingGuide()" class="teacher-btn">📥 Descarcă ghid complet</button>
+          <button onclick="viewLessonPlans()" class="secondary">📚 Vezi planuri de lecție</button>
+        </div>
+      </div>
+      
+      <h3>🚨 Managementul situațiilor problematice</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>❌ Plagiat cu AI</h4>
+          <p><b>Situație:</b> Elev predă text generat integral de AI</p>
+          <p><b>Acțiuni recomandate:</b></p>
+          <ol style="font-size:14px">
+            <li>Discuție privată despre etica academică</li>
+            <li>Re-explicare regulilor de utilizare AI</li>
+            <li>Oferirea unei a doua șanse cu monitorizare</li>
+            <li>Documentare incidentului</li>
+          </ol>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>⚠️ Dependență de AI</h4>
+          <p><b>Situație:</b> Elev nu poate rezolva probleme simple fără AI</p>
+          <p><b>Acțiuni recomandate:</b></p>
+          <ol style="font-size:14px">
+            <li>Evaluare nivel dependență</li>
+            <li>Stabilire progresivă de limite</li>
+            <li>Exerciții progresive fără AI</li>
+            <li>Colaborare cu consilier școlar</li>
+          </ol>
+        </div>
+      </div>
+      
+    ` : `
+      <p><b>Perspectiva elevului:</b> Cum să folosești AI pentru a învăța mai eficient și mai responsabil.</p>
+      
+      <h3>🎯 Strategii de învățare cu AI</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+        <div style="padding:20px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>📚 Înțelegerea conceptelor</h4>
+          <ul>
+            <li>Cere explicații în termeni simpli</li>
+            <li>Request analogii și exemple practice</li>
+            <li>Întreabă "De ce?" și "Cum?"</li>
+            <li>Cere conexiuni cu cunoștințe existente</li>
+          </ul>
+        </div>
+        <div style="padding:20px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>✍️ Scrierea creativă</h4>
+          <ul>
+            <li>Folosește AI pentru brainstorming</li>
+            <li>Cere structuri și scheme</li>
+            <li>Utilizează pentru corectare gramaticală</li>
+            <li>Cere feedback asupra clarității</li>
+          </ul>
+        </div>
+      </div>
+      
+      <h3>🚫 Ce să NU faci cu AI</h3>
+      <table class="table">
+        <tr><th>⚠️ Greșeală</th><th>✗ Problemă</th><th>✅ Alternativă corectă</th></tr>
+        <tr><td>Copiezi textul AI</td><td>Plagiat, nu înveți nimic</td><td>Citești, înțelegi, rescrii cu propriile cuvinte</td></tr>
+        <tr><td>Folosești AI la examen</td><td>Înșelăciune, consecințe grave</td><td>Folosești AI pentru pregătire, nu în timpul examenului</td></tr>
+        <tr><td>Crezi tot ce spune AI</td><td>Dezinformare, răspândire falsuri</td><td>Verifici informațiile din surse oficiale</td></tr>
+        <tr><td>Înlocuiești gândirea</td><td>Dependență, pierdere competențe</td><td>Folosești AI ca ajutor, nu ca înlocuitor</td></tr>
+      </table>
+      
+      <h3>📝 Exemplu practic: Cum să folosești ChatGPT pentru un eseu</h3>
+      <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+        <p><b>Tema:</b> Eseu despre impactul social al internetului</p>
+        
+        <div style="margin:15px 0">
+          <div style="display:flex;align-items:center;margin:10px 0">
+            <div style="background:var(--danger);color:white;border-radius:50%;width:25px;height:25px;display:flex;align-items:center;justify-content:center;margin-right:10px">✗</div>
+            <div><b>GRESIT:</b> "Scrie-mi un eseu de 500 de cuvinte despre impactul social al internetului"</div>
+          </div>
+          
+          <div style="display:flex;align-items:center;margin:10px 0">
+            <div style="background:var(--accent2);color:var(--bg);border-radius:50%;width:25px;height:25px;display:flex;align-items:center;justify-content:center;margin-right:10px">✓</div>
+            <div><b>CORECT:</b> 
+              <ol style="margin:5px 0;padding-left:20px">
+                <li>"Generează o structură pentru un eseu despre impactul social al internetului"</li>
+                <li>"Dă-mi 3 argumente pro și 3 contra despre impactul rețelelor sociale"</li>
+                <li>"Sugerează câteva surse de încredere pe această temă"</li>
+                <li>"Verifică acest paragraf pe care l-am scris și sugerează îmbunătățiri"</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        
+        <p><i>Diferența este că în al doilea caz, tu rămâi autorul eseului. AI este doar instrumentul care te ajută să gândești și să structurezi.</i></p>
+      </div>
+      
+      <h3>🎮 Exercițiu practic: Planificarea unui proiect cu AI</h3>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px;margin:15px 0">
+        <p><b>Încercați să:</b></p>
+        <ol>
+          <li>Alegeți un subiect pentru un proiect școlar</li>
+          <li>Folosiți chat bot-ul pentru a genera idei și o structură</li>
+          <li>Citiți și înțelegeți sugestiile primite</li>
+          <li>Scrieți propriul plan cu propriile cuvinte</li>
+          <li>Verificați informațiile importante din surse oficiale</li>
+        </ol>
+        
+        <div style="margin-top:15px">
+          <button onclick="render('chat')" class="student-btn">💬 Accesează chat bot</button>
+          <button onclick="openProjectPlanner()" class="secondary">📋 Deschide planificator</button>
+        </div>
+      </div>
+    `}
+    
+    <h3>📊 Date și statistici relevante</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🌍 La nivel global</h4>
+        <ul style="font-size:14px">
+          <li>87% dintre studenți folosesc ChatGPT pentru învățare</li>
+          <li>48% dintre profesori integrează AI în predare</li>
+          <li>62% dintre universități au politici specifice pentru AI</li>
+          <li>73% creștere a performanței cu utilizare responsabilă</li>
+        </ul>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🇷🇴 În România</h4>
+        <ul style="font-size:14px">
+          <li>65% dintre licee discuță despre AI în curriculum</li>
+          <li>32% dintre profesori au training pentru utilizare AI</li>
+          <li>Ministerul Educației lucrează la ghiduri oficiale</li>
+          <li>Peste 100 de școli pilot pentru integrare AI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  `;
+};
+
+// Pagina Quiz & Evaluare
+pages.quiz = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  if (isTeacher) {
+    return `
+    <div class="card">
+      <h2>👨‍🏫 Quiz & Evaluare pentru profesori</h2>
+      <p>Instrumente pentru crearea și gestionarea evaluărilor în era AI.</p>
+      
+      <h3>📝 Generator de teste cu AI</h3>
+      <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+        <p><b>Creează rapid un test personalizat:</b></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+          <div>
+            <label>Materie:</label>
+            <input type="text" id="quizSubject" placeholder="Informatică, Matematică, etc." style="width:100%">
+          </div>
+          <div>
+            <label>Nivel:</label>
+            <select id="quizLevel" style="width:100%">
+              <option value="easy">Ușor</option>
+              <option value="medium">Mediu</option>
+              <option value="hard">Dificil</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin:15px 0">
+          <label>Subiect:</label>
+          <textarea id="quizTopic" placeholder="Descrie subiectul testului..." rows="3" style="width:100%"></textarea>
+        </div>
+        <button onclick="generateTestWithAI()" class="teacher-btn" style="width:100%">🤖 Generează test cu AI</button>
+      </div>
+      
+      <h3>📋 Testele tale</h3>
+      <table class="table">
+        <tr><th>Titlu</th><th>Materie</th><th>Clase</th><th>Întrebări</th><th>Acțiuni</th></tr>
+        <tr>
+          <td>Etica AI - Test 1</td>
+          <td>Informatică</td>
+          <td>XI A, XII B</td>
+          <td>15</td>
+          <td>
+            <button onclick="editTest(1)" class="secondary" style="padding:5px 10px">✏️ Editează</button>
+            <button onclick="assignTest(1)" class="secondary" style="padding:5px 10px">📤 Distribuie</button>
+          </td>
+        </tr>
+        <tr>
+          <td>Gândire critică digitală</td>
+          <td>TIC</td>
+          <td>X C</td>
+          <td>10</td>
+          <td>
+            <button onclick="editTest(2)" class="secondary" style="padding:5px 10px">✏️ Editează</button>
+            <button onclick="viewResults(2)" class="secondary" style="padding:5px 10px">📊 Rezultate</button>
+          </td>
+        </tr>
+      </table>
+      
+      <h3>📊 Rezultate și analize</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📈 Performanță pe clase</h4>
+          <p>Vezi cum se descurcă diferite clase la testele tale.</p>
+          <button onclick="viewClassPerformance()" class="secondary" style="width:100%">Vezi statistici</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🎯 Întrebări dificile</h4>
+          <p>Identifică întrebările cu care elevii se luptă cel mai mult.</p>
+          <button onclick="identifyDifficultQuestions()" class="secondary" style="width:100%">Analizează</button>
+        </div>
+      </div>
+      
+      <h3>🔄 Evaluare adaptivă cu AI</h3>
+      <div style="background:rgba(255,153,102,.1);padding:15px;border-radius:12px;margin:15px 0">
+        <p><b>Sistem inteligent de evaluare:</b> AI poate ajusta dificultatea întrebărilor în funcție de răspunsurile elevului.</p>
+        <button onclick="setupAdaptiveTesting()" class="teacher-btn" style="width:100%;margin-top:10px">⚙️ Configurează evaluare adaptivă</button>
+      </div>
+    </div>
+    `;
+  } else {
+    return `
+    <div class="card">
+      <h2>📝 Quiz & Evaluare pentru elevi</h2>
+      <p>Testează-ți cunoștințele despre utilizarea responsabilă a AI în educație.</p>
+      
+      <div id="quizContent">
+        <p>Selectează un quiz pentru a începe:</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+          <button onclick="startQuiz('ethics')" class="student-btn" style="padding:15px">
+            <div style="font-size:24px">⚖️</div>
+            <h4>Etica AI</h4>
+            <p style="font-size:12px">10 întrebări</p>
+          </button>
+          <button onclick="startQuiz('critical')" class="student-btn" style="padding:15px">
+            <div style="font-size:24px">🧠</div>
+            <h4>Gândire critică</h4>
+            <p style="font-size:12px">8 întrebări</p>
+          </button>
+          <button onclick="startQuiz('addiction')" class="student-btn" style="padding:15px">
+            <div style="font-size:24px">📵</div>
+            <h4>Dependență digitală</h4>
+            <p style="font-size:12px">12 întrebări</p>
+          </button>
+          <button onclick="startQuiz('sources')" class="student-btn" style="padding:15px">
+            <div style="font-size:24px">🔍</div>
+            <h4>Verificare surse</h4>
+            <p style="font-size:12px">6 întrebări</p>
+          </button>
+        </div>
+        
+        <h3>📊 Rezultatele tale anterioare</h3>
+        <table class="table">
+          <tr><th>Quiz</th><th>Dată</th><th>Scor</th><th>Nivel</th></tr>
+          <tr><td>Etica AI</td><td>10.12.2024</td><td>85%</td><td><span class="student-tag">Excelent</span></td></tr>
+          <tr><td>Gândire critică</td><td>05.12.2024</td><td>72%</td><td><span class="student-tag">Bun</span></td></tr>
+        </table>
+      </div>
+    </div>
+    `;
+  }
+};
+
+// Pagina Resurse educaționale
+pages.resources = () => {
+  const isTeacher = userRole === 'teacher';
+  
+  return `
+  <div class="card">
+    <h2>${isTeacher ? '👨‍🏫' : '🎓'} Resurse educaționale</h2>
+    
+    ${isTeacher ? `
+      <h3>📚 Resurse pentru profesori</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+        <div style="padding:20px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>📋 Planuri de lecție</h4>
+          <ul>
+            <li>"Introducere în etica AI" (60 minute)</li>
+            <li>"Gândire critică în era digitală" (45 minute)</li>
+            <li>"Workshop: Folosirea responsabilă a ChatGPT" (90 minute)</li>
+            <li>"Evaluarea în era AI" (45 minute)</li>
+          </ul>
+          <button onclick="downloadLessonPlans()" class="teacher-btn" style="width:100%;margin-top:10px">📥 Descarcă toate</button>
+        </div>
+        
+        <div style="padding:20px;background:rgba(255,153,102,.1);border-radius:12px">
+          <h4>🛠️ Instrumente didactice</h4>
+          <ul>
+            <li>Generator rubrici de evaluare</li>
+            <li>Șabloane pentru feedback</li>
+            <li>Fișe de lucru pentru elevi</li>
+            <li>Prezentări PowerPoint</li>
+          </ul>
+          <button onclick="downloadTeachingTools()" class="teacher-btn" style="width:100%;margin-top:10px">📥 Descarcă instrumente</button>
+        </div>
+      </div>
+      
+      <h3>📊 Materiale pentru părinți</h3>
+      <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+        <p><b>Ajută părinții să înțeleagă și să sprijine utilizarea responsabilă a AI:</b></p>
+        <ul>
+          <li>Ghid pentru părinți: "Copilul meu și AI"</li>
+          <li>Prezentare pentru întâlnirile cu părinții</li>
+          <li>Listă de verificare pentru acasă</li>
+          <li>Resurse pentru discuții familiale</li>
+        </ul>
+        <button onclick="downloadParentResources()" class="secondary" style="width:100%;margin-top:10px">📥 Descarcă resurse pentru părinți</button>
+      </div>
+      
+      <h3>🏫 Politici și regulamente</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📜 Politică școlară model</h4>
+          <p>Șablon complet pentru politica de utilizare AI în instituția ta.</p>
+          <button onclick="downloadSchoolPolicy()" class="secondary" style="width:100%">Descarcă șablon</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📝 Acord de utilizare pentru elevi</h4>
+          <p>Document pentru semnarea de către elevi și părinți.</p>
+          <button onclick="downloadUsageAgreement()" class="secondary" style="width:100%">Descarcă acord</button>
+        </div>
+      </div>
+      
+    ` : `
+      <h3>📚 Resurse pentru elevi</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0">
+        <div style="padding:20px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>💡 Ghiduri practice</h4>
+          <ul>
+            <li>"Cum să folosești ChatGPT pentru învățare"</li>
+            <li>"Checklist utilizare responsabilă"</li>
+            <li>"Ghid de verificare a surselor"</li>
+            <li>"Cum să eviți dependența de AI"</li>
+          </ul>
+          <button onclick="downloadStudentGuides()" class="student-btn" style="width:100%;margin-top:10px">📥 Descarcă toate</button>
+        </div>
+        
+        <div style="padding:20px;background:rgba(102,255,204,.1);border-radius:12px">
+          <h4>🛠️ Instrumente de învățare</h4>
+          <ul>
+            <li>Planificator de studii săptămânal</li>
+            <li>Jurnal de învățare digital</li>
+            <li>Generator de prompturi utile</li>
+            <li>Șablon pentru proiecte școlare</li>
+          </ul>
+          <button onclick="downloadLearningTools()" class="student-btn" style="width:100%;margin-top:10px">📥 Descarcă instrumente</button>
+        </div>
+      </div>
+      
+      <h3>📝 Șabloane pentru teme și proiecte</h3>
+      <div style="background:rgba(255,255,255,.05);padding:20px;border-radius:12px;margin:15px 0">
+        <p><b>Strucrează-ți munca școlară cu ajutorul acestor șabloane:</b></p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin:15px 0">
+          <button onclick="downloadTemplate('essay')" class="secondary">📄 Șablon eseu</button>
+          <button onclick="downloadTemplate('research')" class="secondary">🔬 Șablon cercetare</button>
+          <button onclick="downloadTemplate('project')" class="secondary">📋 Șablon proiect</button>
+          <button onclick="downloadTemplate('presentation')" class="secondary">📊 Șablon prezentare</button>
+        </div>
+      </div>
+      
+      <h3>🎮 Activități interactive</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>🧩 Jocuri educative</h4>
+          <p>Învață despre etica AI prin jocuri interactive.</p>
+          <button onclick="playEthicsGame()" class="student-btn" style="width:100%">Joacă acum</button>
+        </div>
+        <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+          <h4>📊 Challenge-uri săptămânale</h4>
+          <p>Provocări pentru dezvoltarea competențelor digitale.</p>
+          <button onclick="viewWeeklyChallenges()" class="student-btn" style="width:100%">Vezi challenge-uri</button>
+        </div>
+      </div>
+    `}
+    
+    <h3>📖 Bibliografie recomandată</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0">
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>📚 Cărți</h4>
+        <ul style="font-size:14px">
+          <li>"The AI Classroom" - Dan Fitzpatrick</li>
+          <li>"Teaching with AI" - José Antonio Bowen</li>
+          <li>"AI for Educators" - Matt Miller</li>
+          <li>"Etica în era digitală" - Editura Academiei</li>
+        </ul>
+      </div>
+      <div style="padding:15px;border:1px solid var(--border);border-radius:12px">
+        <h4>🌍 Resurse online</h4>
+        <ul style="font-size:14px">
+          <li>UNESCO - AI and Education</li>
+          <li>European Commission - Digital Education</li>
+          <li>Common Sense Media - AI Literacy</li>
+          <li>Ministerul Educației României</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div style="border-top:1px solid var(--border);padding-top:20px;margin-top:20px">
+      <h4>🤝 Contribuie și tu!</h4>
+      <p>Ai o resursă utilă pe care ai vrea să o împărtășești cu alții?</p>
+      <button onclick="shareResource()" class="${isTeacher ? 'teacher-btn' : 'student-btn'}" style="width:100%">📤 Împărtășește o resursă</button>
+    </div>
+  </div>
+  `;
+};
+
+// ===== FUNCȚII COMUNE =====
+
+// Funcții pentru paginile noi adăugate
+function checkVerificationExercise() {
+  const steps = document.getElementById('verificationSteps').value;
+  if (steps.length < 20) {
+    showNotification('Te rugăm să scrii mai mulți pași de verificare.', 'warning');
+    return;
+  }
+  
+  document.getElementById('verificationResult').style.display = 'block';
+  points += 15;
+  updatePointsDisplay();
+  showNotification('Exercițiu verificat! +15 puncte', 'success');
+}
+
+function showAnswer() {
+  document.getElementById('verificationResult').style.display = 'block';
+  showNotification('Răspunsul corect este acum vizibil.', 'info');
+}
+
+function generateEthicsStatement() {
+  const statements = [
+    "În elaborarea acestei lucrări, am folosit ChatGPT pentru generarea de idei și verificarea structurii. Toate informațiile au fost verificate din surse oficiale, iar textul final a fost scris în întregime de mine.",
+    "Am utilizat inteligența artificială ca instrument de brainstorming și pentru verificarea consistenței logice. Conținutul a fost adaptat și completat cu cercetarea mea personală și analiza critică.",
+    "ChatGPT a fost folosit doar pentru clarificarea conceptelor și generarea de structuri inițiale. Munca finală reprezintă gândirea și scrierea mea originală, bazată pe surse verificate."
+  ];
+  
+  const randomStatement = statements[Math.floor(Math.random() * statements.length)];
+  alert(`📝 Declarație generată:\n\n${randomStatement}\n\n⚠️ Nu uita să o personalizezi pentru lucrarea ta specifică!`);
+  points += 10;
+  updatePointsDisplay();
+}
+
+function checkDilemma(dilemmaNum) {
+  const select = document.getElementById(`dilemma${dilemmaNum}`);
+  const value = select.value;
+  
+  let correctAnswer = '';
+  let explanation = '';
+  
+  if (dilemmaNum === 1) {
+    correctAnswer = '2';
+    explanation = 'Corect! Folosești ChatGPT doar pentru idei, apoi scrii tu. În acest mod, înveți și eviți plagiatul.';
+  } else {
+    correctAnswer = '2';
+    explanation = 'Corect! Verificarea în surse oficiale este cea mai bună abordare. AI poate greși, manualul poate fi depășit.';
+  }
+  
+  if (value === correctAnswer) {
+    showNotification(`✅ ${explanation} +10 puncte`, 'success');
+    points += 10;
+  } else if (value) {
+    showNotification('❌ Răspuns incorect. Reîncearcă!', 'warning');
+  } else {
+    showNotification('Selectează un răspuns mai întâi.', 'info');
+  }
+  updatePointsDisplay();
+}
+
+function calculateAddictionScore() {
+  const q1 = parseInt(document.getElementById('q1').value) || 0;
+  const q2 = parseInt(document.getElementById('q2').value) || 0;
+  const q3 = parseInt(document.getElementById('q3').value) || 0;
+  
+  const total = q1 + q2 + q3;
+  let result = '';
+  let color = '';
+  
+  if (total <= 2) {
+    result = '🎉 Excelent! Utilitzare sănătoasă. Ești pe calea cea bună.';
+    color = 'rgba(102,255,204,.3)';
+  } else if (total <= 5) {
+    result = '⚠️ Atenție! Unele semne de dependență. Ar fi bine să-ți setezi limite.';
+    color = 'rgba(255,204,102,.3)';
+  } else {
+    result = '🚨 Alertă! Semne clare de dependență. Ar trebui să ceri ajutor.';
+    color = 'rgba(255,107,107,.3)';
+  }
+  
+  document.getElementById('addictionResult').innerHTML = `
+    <h4>Scorul tău: ${total}/9</h4>
+    <p>${result}</p>
+    <p><small>Acest test este doar orientativ. Dacă ești îngrijorat, vorbește cu un profesor sau părinte.</small></p>
+  `;
+  document.getElementById('addictionResult').style.display = 'block';
+  document.getElementById('addictionResult').style.background = color;
+  
+  points += 5;
+  updatePointsDisplay();
+}
+
+function switchCaseTab(tab) {
+  // Update tabs
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Show content
+  document.getElementById('successCases').style.display = 'none';
+  document.getElementById('failureCases').style.display = 'none';
+  document.getElementById('mixedCases').style.display = 'none';
+  document.getElementById(tab + 'Cases').style.display = 'block';
+}
+
+function analyzePersonalCase() {
+  const personalCase = document.getElementById('personalCase').value;
+  const chatgptUsage = document.getElementById('chatgptUsage').value;
+  const lessonsLearned = document.getElementById('lessonsLearned').value;
+  
+  if (!personalCase || !chatgptUsage || !lessonsLearned) {
+    showNotification('Completează toate câmpurile pentru analiză.', 'warning');
+    return;
+  }
+  
+  showNotification('✅ Analiza ta a fost salvată. Poți vizualiza istoricul din cont.', 'success');
+  points += 20;
+  updatePointsDisplay();
+}
+
+function saveCaseStudy() {
+  showNotification('📚 Cazul tău a fost salvat în biblioteca personală.', 'success');
+  points += 10;
+  updatePointsDisplay();
+}
+
+function calculateBalanceScore() {
+  const bq1 = parseInt(document.getElementById('bq1').value) || 0;
+  const bq2 = parseInt(document.getElementById('bq2').value) || 0;
+  const bq3 = parseInt(document.getElementById('bq3').value) || 0;
+  
+  const total = bq1 + bq2 + bq3;
+  let result = '';
+  let color = '';
+  let zone = '';
+  
+  if (total >= 8) {
+    zone = '✅ Zona SPRIJIN';
+    result = 'Excelent! Folosești AI într-un mod responsabil și constructiv.';
+    color = 'rgba(102,255,204,.3)';
+  } else if (total >= 5) {
+    zone = '⚠️ Zona de TRANSIȚIE';
+    result = 'Ai unele obiceiuri bune, dar și câteva riscuri. Fii atent!';
+    color = 'rgba(255,204,102,.3)';
+  } else {
+    zone = '❌ Zona CAPCANĂ';
+    result = 'Risc ridicat de dependență și înșelăciune. Schimbă-ți abordarea!';
+    color = 'rgba(255,107,107,.3)';
+  }
+  
+  document.getElementById('balanceResult').innerHTML = `
+    <h4>${zone}</h4>
+    <p><b>Scor: ${total}/9</b></p>
+    <p>${result}</p>
+    <div style="margin-top:10px">
+      <button onclick="createActionPlan()" class="secondary">📝 Creează plan de îmbunătățire</button>
+    </div>
+  `;
+  document.getElementById('balanceResult').style.display = 'block';
+  document.getElementById('balanceResult').style.background = color;
+  
+  points += 5;
+  updatePointsDisplay();
+}
+
+function createActionPlan() {
+  const plan = prompt('Ce acțiuni concrete vei întreprinde să îmbunătățești utilizarea AI?');
+  if (plan) {
+    localStorage.setItem('ai_action_plan', plan);
+    showNotification('✅ Planul tău de acțiune a fost salvat!', 'success');
+    points += 15;
+    updatePointsDisplay();
+  }
+}
+
+// Funcții pentru Chat Bot
+let chatMessages = [];
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  
+  if (!message) {
+    showNotification('Scrie un mesaj mai întâi.', 'warning');
+    return;
+  }
+  
+  // Add user message
+  addMessage(message, 'me');
+  input.value = '';
+  
+  // Generate bot response
+  setTimeout(() => {
+    const response = generateBotResponse(message);
+    addMessage(response, 'bot');
+  }, 1000);
+  
+  // Save message
+  chatMessages.push({ role: 'user', content: message });
+  if (chatMessages.length > 50) chatMessages.shift();
+  
+  points += 2;
+  updatePointsDisplay();
+}
+
+function addMessage(text, sender) {
+  const chatLog = document.getElementById('chatLog');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `msg ${sender}`;
+  msgDiv.innerHTML = `<b>${sender === 'me' ? '👤 Tu' : '🤖 Asistent EDU'}:</b> ${text}`;
+  chatLog.appendChild(msgLog);
+  
+  // Scroll to bottom
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function generateBotResponse(message) {
+  const lowerMsg = message.toLowerCase();
+  const responses = {
+    greeting: ['Salut!', 'Bună!', 'Bine ai venit!'],
+    help: ['Cum te pot ajuta?', 'Cu ce anume ai nevoie?', 'Spune-mi cum te pot asista.'],
+    ethics: ['Etica în utilizarea AI este crucială. Transparența și verificarea sunt cheile.'],
+    learning: ['AI poate fi un profesor personal excelent. Folosește-l pentru explicații și exerciții.'],
+    default: ['Interesant! Poți să dezvolți?', 'Am înțeles. Cum te simți în legătură cu asta?', 'Ai putea încerca să...']
+  };
+  
+  if (lowerMsg.includes('salut') || lowerMsg.includes('bună') || lowerMsg.includes('hello')) {
+    return responses.greeting[Math.floor(Math.random() * responses.greeting.length)];
+  } else if (lowerMsg.includes('ajutor') || lowerMsg.includes('ajuta') || lowerMsg.includes('suport')) {
+    return responses.help[Math.floor(Math.random() * responses.help.length)];
+  } else if (lowerMsg.includes('etic') || lowerMsg.includes('moral') || lowerMsg.includes('corect')) {
+    return responses.ethics[0];
+  } else if (lowerMsg.includes('învăț') || lowerMsg.includes('studiu') || lowerMsg.includes('lecție')) {
+    return responses.learning[0];
+  } else {
+    return responses.default[Math.floor(Math.random() * responses.default.length)];
+  }
+}
+
+function useSuggestedQuestion(num) {
+  const questions = [
+    "Cum să folosesc ChatGPT pentru a scrie un eseu fără să înșel?",
+    "Cum verific dacă informațiile de la ChatGPT sunt corecte?",
+    "Care sunt cele mai importante reguli etice pentru utilizarea AI în educație?",
+    "Cum mă asigur că munca mea este originală și nu doar copiată de la AI?"
+  ];
+  
+  document.getElementById('chatInput').value = questions[num-1];
+}
+
+function switchChatMode(mode) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  const modes = {
+    learning: '🎓 Modul de învățare activat. Întreabă-mă despre concepte, exerciții, și metode de studiu.',
+    ethics: '⚖️ Modul de etică activat. Discutăm despre utilizarea responsabilă și transparență.',
+    projects: '📋 Modul de proiecte activat. Te pot ajuta cu planificarea și organizarea proiectelor.',
+    troubleshoot: '🛠️ Modul de problem solving activat. Hai să rezolvăm împreună probleme dificile.'
+  };
+  
+  addMessage(modes[mode], 'bot');
+}
+
+function clearChat() {
+  if (confirm('Sigur vrei să ștergi toată conversația?')) {
+    document.getElementById('chatLog').innerHTML = `
+      <div class="msg bot">
+        <b>🤖 Asistent EDU:</b> Bună! Sunt aici să te ajut cu întrebări despre utilizarea responsabilă a ChatGPT în educație. Cum te pot ajuta astăzi?
+      </div>
+    `;
+    chatMessages = [];
+    showNotification('Conversația a fost ștearsă.', 'info');
+  }
+}
+
+function exportChat() {
+  const chatContent = chatMessages.map(m => `${m.role === 'user' ? '👤 Tu' : '🤖 Asistent'}: ${m.content}`).join('\n');
+  const blob = new Blob([chatContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `chat_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+  showNotification('Conversația a fost exportată.', 'success');
+}
+
+// Funcții pentru Educația 2030
+function createFutureVision() {
+  const skills = document.getElementById('futureSkills').value;
+  const aiUsage = document.getElementById('futureAIUsage').value;
+  
+  if (!skills || !aiUsage) {
+    showNotification('Completează ambele câmpuri.', 'warning');
+    return;
+  }
+  
+  const vision = `
+    <h4>🚀 Viziunea ta educațională pentru 2030</h4>
+    <p><b>Abilități de dezvoltat:</b> ${skills}</p>
+    <p><b>Utilizare AI viitoare:</b> ${aiUsage}</p>
+    <p><i>Sfat: Revizuiește această viziune la fiecare 6 luni și ajustează-o pe măsură ce evoluezi.</i></p>
+  `;
+  
+  document.getElementById('futureVisionResult').innerHTML = vision;
+  document.getElementById('futureVisionResult').style.display = 'block';
+  
+  points += 20;
+  updatePointsDisplay();
+  showNotification('Viziunea ta a fost creată!', 'success');
+}
+
+function shareFutureIdeas() {
+  const idea = prompt('Care este ideea ta pentru educația viitorului?');
+  if (idea && idea.length > 10) {
+    showNotification('Îți mulțumim pentru contribuție! Ideea ta va fi analizată și partajată cu comunitatea.', 'success');
+    points += 25;
+    updatePointsDisplay();
+  }
+}
+
+// Funcții specifice pentru profesori
+function createNewClass() {
+  showNotification('Funcționalitate în dezvoltare: Creare clasă nouă', 'info');
+}
+
+function generateAssignmentWithAI() {
+  const cls = document.getElementById('assignmentClass').value;
+  const type = document.getElementById('assignmentType').value;
+  const topic = document.getElementById('assignmentTopic').value;
+  
+  if (!topic) {
+    showNotification('Te rugăm să introduci un subiect pentru temă.', 'warning');
+    return;
+  }
+  
+  showNotification(`Tema "${topic}" pentru ${cls} se generează cu AI...`, 'info');
+  points += 10;
+  updatePointsDisplay();
+  
+  // Simulare generare
+  setTimeout(() => {
+    showNotification(`✅ Tema generată cu succes! Ai primit 10 puncte.`, 'success');
+    // Adaugă tema la lista de teme
+    userAssignments.push({
+      id: userAssignments.length + 1,
+      class: cls,
+      title: topic,
+      assigned: new Date().toISOString().split('T')[0],
+      submissions: 0,
+      total: userClasses.find(c => c.name === cls)?.students || 30
+    });
+    render('assignments');
+  }, 2000);
+}
+
+function viewClassAnalytics(className) {
+  showNotification(`Analize pentru ${className} se încarcă...`, 'info');
+}
+
+// Funcții specifice pentru elevi
+function viewMyAssignments() {
+  showNotification('Încărcare teme personale...', 'info');
+  // Într-o implementare reală, s-ar încărca din backend
+}
+
+function setLearningGoals() {
+  const goals = prompt('Ce obiective de învățare vrei să îți setezi pentru următoarea lună?');
+  if (goals) {
+    localStorage.setItem('learningGoals', goals);
+    showNotification('Obiectivele tale au fost salvate!', 'success');
+    points += 15;
+    updatePointsDisplay();
+  }
+}
+
+// Funcții comune
+function exportData() {
+  const data = {
+    user: currentUser,
+    userData: userData,
+    points: points,
+    exportDate: new Date().toISOString()
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eduforall_${currentUser.name}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  
+  showNotification('Datele au fost exportate cu succes!', 'success');
+  points += 10;
+  updatePointsDisplay();
+}
+
+function generateReport() {
+  if (userRole !== 'teacher') {
+    showNotification('Această funcție este disponibilă doar pentru profesori.', 'warning');
+    return;
+  }
+  
+  showNotification('Generare raport în curs...', 'info');
+  setTimeout(() => {
+    showNotification('✅ Raport generat cu succes! Poate fi descărcat.', 'success');
+    points += 20;
+    updatePointsDisplay();
+  }, 1500);
+}
+
+// RENDER PAGINI
+function render(page) {
+  if (!currentUser) {
+    document.getElementById('loginModal').style.display = 'flex';
+    return;
+  }
+  
+  document.querySelectorAll(".nav button").forEach(b => b.classList.remove("active"));
+  const btn = document.querySelector(`[data-p="${page}"]`);
+  if (btn) btn.classList.add("active");
+  
+  localStorage.setItem('eduforall_currentPage', page);
+  
+  const titleMap = {
+    home: "ACASĂ",
+    dashboard: "DASHBOARD",
+    sources: "SURSE & VERIFICARE",
+    quiz: "QUIZ & EVALUARE",
+    ai: "INTELIGENȚA ARTIFICIALĂ",
+    ethics: "ETICĂ",
+    addiction: "DEPENDENȚĂ",
+    cases: "STUDII DE CAZ",
+    compare: "SPRIJIN VS CAPCANĂ",
+    chat: "CHAT BOT EDUCAȚIONAL",
+    resources: "RESURSE EDUCAȚIONALE",
+    classes: "MANAGEMENT CLASE",
+    assignments: "TEME & PROIECTE",
+    analytics: "ANALIZE",
+    future: "EDUCAȚIA 2030"
+  };
+  
+  document.getElementById("title").innerText = titleMap[page] || page.toUpperCase();
+  
+  if (pages[page]) {
+    document.getElementById("page").innerHTML = pages[page]();
+  } else {
+    document.getElementById("page").innerHTML = `<div class="card"><h2>Pagina în construcție</h2><p>Secțiunea "${page}" va fi disponibilă în curând.</p></div>`;
+  }
+}
+
+// Funcții pentru quiz-uri pentru elevi
+function startQuiz(type) {
+  const quizzes = {
+    ethics: {
+      title: "Quiz: Etica AI",
+      questions: [
+        { q: "Copierea unui eseu generat de AI este:", a: ["Acceptabilă", "Plagiat"], c: 1 },
+        { q: "Trebuie să menționezi când folosești AI într-o lucrare?", a: ["Nu", "Da"], c: 1 },
+        { q: "AI poate fi considerat autorul unei lucrări?", a: ["Da", "Nu"], c: 1 }
+      ]
+    },
+    critical: {
+      title: "Quiz: Gândire critică",
+      questions: [
+        { q: "Trebuie să verifici informațiile de la AI?", a: ["Nu", "Da"], c: 1 },
+        { q: "AI poate genera informații greșite?", a: ["Nu", "Da"], c: 1 },
+        { q: "Gândirea critică înseamnă să crezi tot ce citești?", a: ["Da", "Nu"], c: 1 }
+      ]
+    }
+  };
+  
+  const quiz = quizzes[type];
+  if (!quiz) return;
+  
+  let html = `<h3>${quiz.title}</h3>`;
+  quiz.questions.forEach((q, i) => {
+    html += `<div style="margin:15px 0">
+      <p><b>${i+1}. ${q.q}</b></p>
+      ${q.a.map((a, j) => `<label style="display:block;margin:5px 0"><input type="radio" name="q${i}" value="${j}"> ${a}</label>`).join('')}
+    </div>`;
+  });
+  
+  html += `<button onclick="finishQuiz('${type}')" class="student-btn">✔ Finalizează quiz</button><div id="quizResult"></div>`;
+  
+  document.getElementById('quizContent').innerHTML = html;
+}
+
+function finishQuiz(type) {
+  // Simulare calcul scor
+  const score = Math.floor(Math.random() * 30) + 70; // 70-100%
+  points += Math.floor(score / 10);
+  
+  document.getElementById('quizResult').innerHTML = `
+    <div style="background:rgba(102,255,204,.1);padding:20px;border-radius:12px;margin-top:20px">
+      <h3>🎉 Quiz completat!</h3>
+      <p><b>Scorul tău: ${score}%</b></p>
+      <p>Ai câștigat ${Math.floor(score / 10)} puncte!</p>
+      <p>Puncte totale: ${points}</p>
+    </div>
+  `;
+  
+  updatePointsDisplay();
+  showNotification(`Quiz completat cu scor ${score}%! +${Math.floor(score / 10)} puncte`, 'success');
+}
+
+// Funcții pentru descărcare resurse
+function downloadLessonPlans() {
+  showNotification('Planurile de lecție se descarcă...', 'info');
+  points += 25;
+  updatePointsDisplay();
+}
+
+function downloadStudentGuides() {
+  showNotification('Ghidurile pentru elevi se descarcă...', 'info');
+  points += 20;
+  updatePointsDisplay();
+}
+
+function downloadTemplate(type) {
+  const templates = {
+    essay: 'Șablon eseu',
+    research: 'Șablon cercetare',
+    project: 'Șablon proiect',
+    presentation: 'Șablon prezentare'
+  };
+  showNotification(`Șablonul "${templates[type]}" se descarcă...`, 'info');
+  points += 5;
+  updatePointsDisplay();
+}
+
+function shareResource() {
+  const resource = prompt('Descrie resursa pe care dorești să o împărtășești:');
+  if (resource) {
+    showNotification('Îți mulțumim pentru contribuție! Resursa va fi verificată și adăugată.', 'success');
+    points += 15;
+    updatePointsDisplay();
+  }
+}
+
+// Funcții pentru butoane care nu erau implementate
+function openTeacherTools() {
+  showNotification('Instrumentele pentru profesori se încarcă...', 'info');
+  render('analytics');
+}
+
+function workOnAssignment(id) {
+  showNotification(`Începi să lucrezi la tema ${id}...`, 'info');
+  // Într-o implementare reală, s-ar deschide editorul
+}
+
+function viewClass(className) {
+  showNotification(`Vizualizezi detaliile pentru ${className}...`, 'info');
+  render('classes');
+}
+
+function gradeAssignment(id) {
+  showNotification(`Notezi tema ${id}...`, 'info');
+  // Într-o implementare reală, s-ar deschide interfata de notare
+}
+
+function generateTestWithAI() {
+  const subject = document.getElementById('quizSubject').value || 'Informatică';
+  const topic = document.getElementById('quizTopic').value || 'Utilizarea responsabilă a AI';
+  
+  showNotification(`Generează test pentru ${subject}...`, 'info');
+  points += 15;
+  updatePointsDisplay();
+  
+  setTimeout(() => {
+    showNotification(`✅ Test generat cu succes pe tema "${topic}"`, 'success');
+  }, 1500);
+}
+
+function openFactChecker() {
+  showNotification('Deschidere fact-checker online...', 'info');
+  window.open('https://factcheck.afp.com/', '_blank');
+}
+
+function downloadEthicsGuide() {
+  showNotification('Descărcare ghid de etică...', 'info');
+  points += 10;
+  updatePointsDisplay();
+}
+
+function getHelp() {
+  const resources = `
+    Resurse de ajutor:
+    1. Telefonul Copilului: 116111
+    2. Consilieri școlari
+    3. Părinți sau tutori
+    4. Profesori de încredere
+    5. Servicii de consiliere online
+  `;
+  alert(resources);
+}
+
+function playEthicsGame() {
+  showNotification('Jocul de etică se încarcă...', 'info');
+  // Într-o implementare reală, s-ar deschide un joc interactiv
+}
+
+// INIȚIALIZARE
+document.addEventListener("DOMContentLoaded", function() {
+  initApp();
+  
+  // Configurează butoanele de navigare
+  document.querySelectorAll(".nav button").forEach(button => {
+    button.addEventListener("click", function() {
+      if (this.dataset.p) {
+        render(this.dataset.p);
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>
